@@ -1,0 +1,1900 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>GlowBook</title>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{font-family:'Inter',sans-serif;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+.font-display{font-family:'Playfair Display',serif}
+body{background:#FFFFFF;color:#2B2B2B;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+::-webkit-scrollbar{width:0;height:0}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideUp{from{opacity:0;transform:translateY(100%)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideLeft{from{transform:translateX(100%)}to{transform:translateX(0)}}
+@keyframes scaleIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+@keyframes pulse2{0%,100%{opacity:1}50%{opacity:.6}}
+@keyframes bounceIn{0%{transform:scale(.3);opacity:0}50%{transform:scale(1.05)}70%{transform:scale(.95)}100%{transform:scale(1);opacity:1}}
+@keyframes typing{0%,60%,100%{opacity:.3}30%{opacity:1}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.animate-fade{animation:fadeIn .45s cubic-bezier(.16,1,.3,1)}
+.animate-slide{animation:slideUp .35s cubic-bezier(.16,1,.3,1)}
+.animate-scale{animation:scaleIn .3s cubic-bezier(.16,1,.3,1)}
+.animate-bounce-in{animation:bounceIn .5s cubic-bezier(.16,1,.3,1)}
+.animate-float{animation:float 3s ease-in-out infinite}
+.shimmer{background:linear-gradient(90deg,#f5f5f5 25%,#e8e8e8 50%,#f5f5f5 75%);background-size:200% 100%;animation:shimmer 1.5s infinite}
+.btn-primary{background:linear-gradient(135deg,#E8A7BB,#D48FA3);color:#fff;border-radius:14px;padding:13px 28px;font-weight:600;transition:all .25s cubic-bezier(.16,1,.3,1);border:none;cursor:pointer;font-size:15px;box-shadow:0 4px 15px rgba(232,167,187,.35);position:relative;overflow:hidden}
+.btn-primary:active{transform:scale(.97);box-shadow:0 2px 8px rgba(232,167,187,.25)}
+.btn-primary::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,transparent,rgba(255,255,255,.2));opacity:0;transition:opacity .25s}
+.btn-primary:hover::after{opacity:1}
+.btn-outline{background:transparent;color:#E8A7BB;border:2px solid #E8A7BB;border-radius:14px;padding:11px 24px;font-weight:600;transition:all .25s;cursor:pointer;font-size:14px}
+.btn-outline:hover{background:#E8A7BB;color:#fff}
+.btn-ghost{background:transparent;color:#777;border:none;padding:8px 16px;font-weight:500;cursor:pointer;transition:all .2s;font-size:14px;border-radius:10px}
+.btn-ghost:hover{color:#2B2B2B;background:#F5F5F6}
+.card{background:#fff;border-radius:18px;border:1px solid #F0EEF0;box-shadow:0 2px 12px rgba(0,0,0,.04);transition:all .25s cubic-bezier(.16,1,.3,1)}
+.card:hover{box-shadow:0 6px 20px rgba(0,0,0,.08);border-color:#E8D5DD}
+.card-glass{background:rgba(255,255,255,.85);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.5)}
+.status-badge{display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:.3px}
+.badge-pending{background:linear-gradient(135deg,#FEF3C7,#FDE68A);color:#92400E}
+.badge-confirmed{background:linear-gradient(135deg,#D1FAE5,#A7F3D0);color:#065F46}
+.badge-rejected{background:linear-gradient(135deg,#FEE2E2,#FECACA);color:#991B1B}
+.badge-completed{background:linear-gradient(135deg,#DBEAFE,#BFDBFE);color:#1E40AF}
+.badge-cancelled{background:linear-gradient(135deg,#F3F4F6,#E5E7EB);color:#4B5563}
+.badge-new-time{background:linear-gradient(135deg,#EDE9FE,#DDD6FE);color:#5B21B6}
+.badge-no-show{background:linear-gradient(135deg,#FEE2E2,#FCA5A5);color:#991B1B}
+.gradient-pink{background:linear-gradient(135deg,#F7DDE6,#FFF0F5)}
+.gradient-hero{background:linear-gradient(160deg,#FFF0F5 0%,#FFFFFF 40%,#F7F8FA 100%)}
+.gradient-card{background:linear-gradient(135deg,rgba(247,221,230,.3),rgba(255,255,255,.8))}
+.slot-available{background:linear-gradient(135deg,#ECFDF5,#D1FAE5);color:#065F46;border:1.5px solid #A7F3D0}
+.slot-booked{background:linear-gradient(135deg,#FFF1F2,#FFE4E6);color:#BE123C;border:1.5px solid #FDA4AF}
+.slot-pending{background:linear-gradient(135deg,#FFFBEB,#FEF3C7);color:#92400E;border:1.5px solid #FCD34D}
+.slot-blocked{background:#F3F4F6;color:#9CA3AF;border:1.5px solid #E5E7EB}
+.input-field{width:100%;border:1.5px solid #EAEAEA;border-radius:12px;padding:12px 16px;font-size:14px;transition:all .2s;background:#FAFAFA}
+.input-field:focus{outline:none;border-color:#E8A7BB;background:#fff;box-shadow:0 0 0 3px rgba(232,167,187,.15)}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 12px;transition:all .2s;position:relative}
+.nav-item::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:0;height:3px;background:#E8A7BB;border-radius:0 0 3px 3px;transition:all .25s}
+.nav-item.active::before{width:24px}
+.nav-item.active{color:#E8A7BB}
+.toast-enter{animation:slideUp .35s cubic-bezier(.16,1,.3,1)}
+.typing-dot{animation:typing 1.4s infinite}
+.typing-dot:nth-child(2){animation-delay:.2s}
+.typing-dot:nth-child(3){animation-delay:.4s}
+.progress-bar{height:6px;border-radius:3px;background:#F0F0F0;overflow:hidden}
+.progress-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,#E8A7BB,#D48FA3);transition:width .6s cubic-bezier(.16,1,.3,1)}
+.mini-chart{display:flex;align-items:end;gap:2px;height:40px}
+.mini-bar{width:6px;border-radius:3px 3px 0 0;background:#E8A7BB;transition:height .4s cubic-bezier(.16,1,.3,1);opacity:.7}
+.mini-bar.active{opacity:1}
+.pb-safe{padding-bottom:env(safe-area-inset-bottom,8px)}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const {useState,useEffect,useCallback,useMemo,useRef,createContext,useContext}=React;
+
+// ======================== UTILS ========================
+const today=new Date();
+const fmtDate=d=>d.toISOString().split('T')[0];
+const addDays=n=>{const d=new Date(today);d.setDate(d.getDate()+n);return d};
+const dayNames=['Domenica','Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato'];
+const dayShort=['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
+const monthNames=['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+const monthShort=['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+
+// ======================== ICONS ========================
+const Icons={
+Sparkle:p=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={p?.s||2} className={`w-${p?.w||5} h-${p?.h||5}`}><path d="M12 2l2.4 7.2L22 12l-7.6 2.8L12 22l-2.4-7.2L2 12l7.6-2.8z"/></svg>,
+Home:p=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={p?.s||2} className={`w-${p?.w||6} h-${p?.h||6}`}><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10 0h3a1 1 0 001-1v-10M9 21v-6a1 1 0 011-1h4a1 1 0 011 1v6"/></svg>,
+Calendar:p=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={p?.s||2} className={`w-${p?.w||6} h-${p?.h||6}`}><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>,
+Services:p=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={p?.s||2} className={`w-${p?.w||6} h-${p?.h||6}`}><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>,
+Bookmark:p=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={p?.s||2} className={`w-${p?.w||6} h-${p?.h||6}`}><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>,
+Gift:p=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={p?.s||2} className={`w-${p?.w||6} h-${p?.h||6}`}><path d="M20 12v10H4V12M2 12h20M12 2v20M17 7c0-2.2-1.8-4-4-4S9 4.8 9 7c0 1.3.6 2.4 1.5 3L12 12l1.5-2c.9-.6 1.5-1.7 1.5-3z"/></svg>,
+Star:p=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={p?.s||2} className={`w-${p?.w||6} h-${p?.h||6}`}><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>,
+Phone:p=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={p?.s||2} className={`w-${p?.w||6} h-${p?.h||6}`}><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.362 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>,
+User:p=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={p?.s||2} className={`w-${p?.w||6} h-${p?.h||6}`}><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8z"/></svg>,
+Clock:p=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={p?.s||2} className={`w-${p?.w||5} h-${p?.h||5}`}><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>,
+MapPin:p=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={p?.s||2} className={`w-${p?.w||5} h-${p?.h||5}`}><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>,
+ChevronRight:p=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={p?.s||2} className={`w-${p?.w||5} h-${p?.h||5}`}><path d="M9 18l6-6-6-6"/></svg>,
+ChevronLeft:p=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={p?.s||2} className={`w-${p?.w||5} h-${p?.h||5}`}><path d="M15 18l-6-6 6-6"/></svg>,
+X:p=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={p?.s||2} className={`w-${p?.w||5} h-${p?.h||5}`}><path d="M18 6L6 18M6 6l12 12"/></svg>,
+Check:p=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={p?.s||2} className={`w-${p?.w||5} h-${p?.h||5}`}><path d="M20 6L9 17l-5-5"/></svg>,
+Plus:p=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={p?.s||2} className={`w-${p?.w||5} h-${p?.h||5}`}><path d="M12 5v14M5 12h14"/></svg>,
+Trash:p=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={p?.s||2} className={`w-${p?.w||5} h-${p?.h||5}`}><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z"/></svg>,
+Edit:p=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={p?.s||2} className={`w-${p?.w||5} h-${p?.h||5}`}><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>,
+MessageCircle:p=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={p?.s||2} className={`w-${p?.w||6} h-${p?.h||6}`}><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>,
+BarChart:p=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={p?.s||2} className={`w-${p?.w||6} h-${p?.h||6}`}><rect x="3" y="12" width="4" height="9" rx="1"/><rect x="10" y="8" width="4" height="13" rx="1"/><rect x="17" y="3" width="4" height="18" rx="1"/></svg>,
+Settings:p=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={p?.s||2} className={`w-${p?.w||6} h-${p?.h||6}`}><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>,
+LogOut:p=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={p?.s||2} className={`w-${p?.w||5} h-${p?.h||5}`}><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>,
+Send:p=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={p?.s||2} className={`w-${p?.w||5} h-${p?.h||5}`}><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>,
+AlertTriangle:p=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={p?.s||2} className={`w-${p?.w||5} h-${p?.h||5}`}><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0zM12 9v4M12 17h.01"/></svg>,
+TrendingUp:p=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={p?.s||2} className={`w-${p?.w||5} h-${p?.h||5}`}><path d="M23 6l-9.5 9.5-5-5L1 18M17 6h6v6"/></svg>,
+Package:p=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={p?.s||2} className={`w-${p?.w||6} h-${p?.h||6}`}><path d="M16.5 9.4l-9-5.19M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><path d="M3.27 6.96L12 12.01l8.73-5.05M12 22.08V12"/></svg>,
+Users:p=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={p?.s||2} className={`w-${p?.w||6} h-${p?.h||6}`}><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>,
+Menu:p=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={p?.s||2} className={`w-${p?.w||6} h-${p?.h||6}`}><path d="M3 12h18M3 6h18M3 18h18"/></svg>,
+Mail:p=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={p?.s||2} className={`w-${p?.w||5} h-${p?.h||5}`}><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 4L12 13 2 4"/></svg>,
+Shield:p=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={p?.s||2} className={`w-${p?.w||5} h-${p?.h||5}`}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>,
+Bell:p=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={p?.s||2} className={`w-${p?.w||6} h-${p?.h||6}`}><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>,
+DollarSign:p=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={p?.s||2} className={`w-${p?.w||5} h-${p?.h||5}`}><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>,
+Scissors:p=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={p?.s||2} className={`w-${p?.w||6} h-${p?.h||6}`}><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4L8.12 15.88M14.47 14.48L20 20M8.12 8.12L12 12"/></svg>,
+Heart:p=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={p?.s||2} className={`w-${p?.w||5} h-${p?.h||5}`}><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>,
+Eye:p=><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={p?.s||2} className={`w-${p?.w||5} h-${p?.h||5}`}><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>,
+};
+
+// ======================== RICH MOCK DATA ========================
+const todayStr=fmtDate(today);
+
+const MOCK={
+beauty_centers:[{id:'bc1',name:'Glow Beauty Studio',logo:'🌸',address:'Via Roma 42, Milano',phone:'+39 02 1234567',whatsapp:'+39 333 1234567',email:'info@glowbeautystudio.it',instagram:'@glowbeautystudio',website:'glowbeautystudio.it',desc:'Il tuo angolo di bellezza nel cuore di Milano. Trattamenti viso, corpo, unghie e molto altro.',rating:4.8,reviewCount:127}],
+
+services:[
+{id:'s1',name:'Manicure semipermanente',cat:'Mani',desc:'Ricostrizione unghie e applicazione smalto semipermanente di lunga durata con prodotti premium',duration:45,price:25,buffer:10,staff:['st1','st2'],active:true,icon:'💅',popular:true},
+{id:'s2',name:'Pedicure estetico',cat:'Piedi',desc:'Trattamento completo con bagno rilassante, scrub, limatura e smalto',duration:50,price:30,buffer:10,staff:['st1'],active:true,icon:'🦶',popular:false},
+{id:'s3',name:'Ceretta gambe complete',cat:'Epilazione',desc:'Ceretta professionale con cera calda e prodotti lenitivi post-trattamento',duration:40,price:28,buffer:10,staff:['st1','st3'],active:true,icon:'✨',popular:true},
+{id:'s4',name:'Design sopracciglia',cat:'Ciglia e sopracciglia',desc:'Design e modellatura sopracciglia su misura con pinzetta e rasoio',duration:20,price:10,buffer:5,staff:['st2'],active:true,icon:'👁️',popular:false},
+{id:'s5',name:'Laminazione ciglia',cat:'Ciglia e sopracciglia',desc:'Laminazione professionale per ciglia naturalmente lunghe, curve e definite',duration:60,price:45,buffer:10,staff:['st2'],active:true,icon:'👀',popular:true},
+{id:'s6',name:'Trattamento viso idratante',cat:'Viso',desc:'Detersione, siero idratante, maschera e massaggio viso con prodotti bio',duration:60,price:55,buffer:10,staff:['st1','st3'],active:true,icon:'💆‍♀️',popular:true},
+{id:'s7',name:'Massaggio relax',cat:'Corpo',desc:'Massaggio decontratturante con oli essenziali naturali e musica rilassante',duration:50,price:50,buffer:10,staff:['st3'],active:true,icon:'💆',popular:false},
+{id:'s8',name:'Make-up evento',cat:'Make-up',desc:'Trucco professionale per matrimoni, feste ed eventi speciali',duration:60,price:60,buffer:10,staff:['st2'],active:true,icon:'💄',popular:false},
+],
+
+categories:['Mani','Piedi','Epilazione','Viso','Corpo','Make-up','Ciglia e sopracciglia','Pacchetti'],
+
+staff:[
+{id:'st1',name:'Giulia Rossi',role:'Senior Beauty Specialist',services:['s1','s2','s3','s6'],avatar:'👩‍🦰',bio:'10 anni di esperienza. Specialista in trattamenti viso e manicure.',rating:4.9,clients:342},
+{id:'st2',name:'Sara Bianchi',role:'Lash & Brow Expert',services:['s1','s4','s5','s8'],avatar:'👩‍🦱',bio:'Certificata in laminazione ciglia e trucco professionale.',rating:4.8,clients:289},
+{id:'st3',name:'Laura Verdi',role:'Body Treatment Specialist',services:['s3','s6','s7'],avatar:'👩‍🦳',bio:'Esperta in massaggi e trattamenti corpo rilassanti.',rating:4.7,clients:198},
+],
+
+working_hours:{mon:[['09:00','13:00'],['14:00','19:00']],tue:[['09:00','13:00'],['14:00','19:00']],wed:[['09:00','13:00'],['14:00','19:00']],thu:[['09:00','13:00'],['14:00','19:00']],fri:[['09:00','13:00'],['14:00','19:00']],sat:[['09:00','18:00']],sun:[]},
+
+customers:[
+{id:'c1',name:'Martina Ferrari',phone:'+39 333 1112233',email:'martina.f@email.it',avatar:'👩‍💼',tags:['VIP'],last_visit:fmtDate(addDays(-5)),total_spent:385,completed:8,no_shows:0,package_purchases:['pp1'],notes:'Cliente VIP, preferisce la mattina. Allergia alla formaldeide.',birthday:'1990-03-15',created_at:fmtDate(addDays(-180))},
+{id:'c2',name:'Chiara Colombo',phone:'+39 333 4445566',email:'chiara.c@email.it',avatar:'👩‍🎨',tags:['Ricorrente'],last_visit:fmtDate(addDays(-12)),total_spent:180,completed:4,no_shows:0,package_purchases:[],notes:'Interessata al pacchetto manicure.',birthday:'1992-07-22',created_at:fmtDate(addDays(-90))},
+{id:'c3',name:'Alessia Conti',phone:'+39 333 7778899',email:'alessia.conti@email.it',avatar:'👩‍⚕️',tags:['Nuovo'],last_visit:fmtDate(addDays(-2)),total_spent:35,completed:1,no_shows:0,package_purchases:[],notes:'Prima visita, molto soddisfatta.',birthday:'1995-11-08',created_at:fmtDate(addDays(-30))},
+{id:'c4',name:'Valentina Russo',phone:'+39 333 0001122',email:'valentina.r@email.it',avatar:'👩‍🔬',tags:['Inattivo'],last_visit:fmtDate(addDays(-95)),total_spent:220,completed:5,no_shows:1,package_purchases:[],notes:'Cliente storica, ultima visita 3 mesi fa.',birthday:'1988-01-30',created_at:fmtDate(addDays(-365))},
+{id:'c5',name:'Sofia Mancini',phone:'+39 333 3334455',email:'sofia.m@email.it',avatar:'👩‍💻',tags:['Nuovo'],last_visit:fmtDate(addDays(-1)),total_spent:55,completed:1,no_shows:0,package_purchases:[],notes:'Prenotato tramite Instagram.',birthday:'1993-09-12',created_at:fmtDate(addDays(-15))},
+{id:'c6',name:'Elena Greco',phone:'+39 333 6667788',email:'elena.g@email.it',avatar:'👩‍🏫',tags:['VIP'],last_visit:fmtDate(addDays(-3)),total_spent:520,completed:12,no_shows:0,package_purchases:['pp2'],notes:'Cliente più fedele. Viene ogni 2 settimane.',birthday:'1985-05-20',created_at:fmtDate(addDays(-400))},
+],
+
+appointments:[
+{id:'ap1',customer_id:'c1',services:['s1','s4'],date:fmtDate(addDays(3)),time:'10:00',status:'confirmed',duration:70,total_price:35,notes:'',staff_id:'st2',created_at:fmtDate(addDays(-2))},
+{id:'ap2',customer_id:'c3',services:['s6'],date:fmtDate(addDays(5)),time:'15:00',status:'pending',duration:60,total_price:55,notes:'Prima volta',staff_id:'st1',created_at:fmtDate(addDays(-1))},
+{id:'ap3',customer_id:'c2',services:['s3'],date:fmtDate(addDays(7)),time:'11:00',status:'confirmed',duration:40,total_price:28,notes:'',staff_id:'st3',created_at:fmtDate(addDays(-3))},
+{id:'ap4',customer_id:'c1',services:['s5'],date:fmtDate(addDays(-2)),time:'14:00',status:'completed',duration:60,total_price:45,notes:'',staff_id:'st2',created_at:fmtDate(addDays(-10))},
+{id:'ap5',customer_id:'c4',services:['s7'],date:fmtDate(addDays(-30)),time:'16:00',status:'cancelled_customer',duration:50,total_price:50,notes:'',staff_id:'st3',created_at:fmtDate(addDays(-35))},
+{id:'ap6',customer_id:'c6',services:['s1','s6'],date:fmtDate(today),time:'09:30',status:'confirmed',duration:115,total_price:80,notes:'',staff_id:'st1',created_at:fmtDate(addDays(-4))},
+{id:'ap7',customer_id:'c6',services:['s4'],date:fmtDate(today),time:'14:30',status:'confirmed',duration:20,total_price:10,notes:'',staff_id:'st2',created_at:fmtDate(addDays(-1))},
+{id:'ap8',customer_id:'c5',services:['s8'],date:fmtDate(addDays(4)),time:'10:30',status:'pending',duration:60,total_price:60,notes:'Trucco per matrimonio amica',staff_id:'st2',created_at:fmtDate(addDays(0))},
+{id:'ap9',customer_id:'c1',services:['s1'],date:fmtDate(addDays(-15)),time:'11:00',status:'completed',duration:45,total_price:25,notes:'',staff_id:'st1',created_at:fmtDate(addDays(-20))},
+{id:'ap10',customer_id:'c2',services:['s1','s4'],date:fmtDate(addDays(-8)),time:'10:00',status:'completed',duration:70,total_price:35,notes:'',staff_id:'st2',created_at:fmtDate(addDays(-12))},
+{id:'ap11',customer_id:'c3',services:['s2'],date:fmtDate(addDays(10)),time:'16:00',status:'pending',duration:50,total_price:30,notes:'',staff_id:'st1',created_at:fmtDate(addDays(0))},
+{id:'ap12',customer_id:'c6',services:['s7'],date:fmtDate(addDays(2)),time:'17:00',status:'confirmed',duration:50,total_price:50,notes:'',staff_id:'st3',created_at:fmtDate(addDays(-5))},
+],
+
+reviews:[
+{id:'r1',customer_id:'c1',appointment_id:'ap4',service_id:'s5',rating:5,comment:'Esperienza fantastica! Le mie ciglia non sono mai state così belle. Sara è bravissima, super professionale. Consiglio a tutte!',approved:true,date:fmtDate(addDays(-1))},
+{id:'r2',customer_id:'c1',appointment_id:'ap9',service_id:'s1',rating:4,comment:'Ottima manicure come sempre, colori perfetti. Tornerò sicuramente!',approved:true,date:fmtDate(addDays(-14))},
+{id:'r3',customer_id:'c2',appointment_id:'ap10',service_id:'s1',rating:5,comment:'Manicure perfetta e sopracciglia impeccabili. Giulia è un\'artista!',approved:true,date:fmtDate(addDays(-7))},
+{id:'r4',customer_id:'c3',appointment_id:'ap2',service_id:'s6',rating:5,comment:'Il trattamento viso è stato una coccola incredibile. Pelle luminosissima!',approved:false,date:fmtDate(addDays(0))},
+{id:'r5',customer_id:'c6',appointment_id:'ap6',service_id:'s6',rating:4,comment:'Sempre ottimo, la pelle ringrazia. Unico neo: ho aspettato 5 minuti.',approved:false,date:fmtDate(addDays(0))},
+],
+
+promotions:[
+{id:'p1',title:'Promo Trattamento Viso',desc:'-20% sul trattamento viso idratante. La tua pelle merita il meglio.',discount:20,type:'percentage',service_id:'s6',valid_until:'2025-06-30',active:true,code:'GLOWFACE20'},
+{id:'p2',title:'Pacchetto Manicure',desc:'5 manicure semipermanenti a 110€ invece di 125€. Risparmi 15€!',discount:12,type:'package',service_id:'s1',sessions:5,package_price:110,regular_price:125,valid_until:'2025-12-31',active:true,code:'MANI5'},
+{id:'p3',title:'Pacchetto Relax',desc:'3 massaggi relax a 130€ invece di 150€. Regalati il benessere.',discount:13,type:'package',service_id:'s7',sessions:3,package_price:130,regular_price:150,valid_until:'2025-12-31',active:true,code:'RELAX3'},
+{id:'p4',title:'Benvenuta!',desc:'-15% sul primo trattamento per le nuove clienti. Benvenuta in Glow! 💕',discount:15,type:'percentage',service_id:null,valid_until:'2025-12-31',active:true,code:'WELCOME15'},
+],
+
+packages:[
+{id:'pkg1',name:'Pacchetto Manicure',service_id:'s1',sessions:5,price:110,desc:'5 manicure semipermanenti',regular_price:125,icon:'💅'},
+{id:'pkg2',name:'Pacchetto Relax',service_id:'s7',sessions:3,price:130,desc:'3 massaggi relax',regular_price:150,icon:'💆'},
+],
+
+package_purchases:[
+{id:'pp1',package_id:'pkg1',customer_id:'c1',purchased_at:fmtDate(addDays(-15)),total_sessions:5,used_sessions:2,status:'active'},
+{id:'pp2',package_id:'pkg2',customer_id:'c6',purchased_at:fmtDate(addDays(-20)),total_sessions:3,used_sessions:1,status:'active'},
+],
+
+whatsapp_logs:[
+{id:'wl1',customer_id:'c1',direction:'outbound',text:'Ciao Martina 🌸\nLa tua prenotazione per il 15/01 alle 10:00 è stata ricevuta! Ti confermiamo a breve.\n\nServizi: Manicure semipermanente + Design sopracciglia\n\nA presto da Glow Beauty Studio ✨',intent:'booking_received',confidence:0.97,status:'read',date:fmtDate(addDays(-2)),appointment_id:'ap1'},
+{id:'wl2',customer_id:'c1',direction:'inbound',text:'Perfetto, grazie mille! 😊',intent:'confirmation',confidence:0.92,status:'read',date:fmtDate(addDays(-2)),appointment_id:'ap1'},
+{id:'wl3',customer_id:'c1',direction:'outbound',text:'Ciao Martina 🌸\nTi ricordiamo che domani hai un appuntamento alle 10:00 per:\n• Manicure semipermanente\n• Design sopracciglia\n\nTi aspettiamo! Se hai bisogno di modificare, scrivici pure 💕',intent:'reminder_24h',confidence:0.99,status:'delivered',date:fmtDate(addDays(2)),appointment_id:'ap1'},
+{id:'wl4',customer_id:'c3',direction:'inbound',text:'Quanto costa la laminazione ciglia?',intent:'faq_price',confidence:0.94,status:'read',date:fmtDate(addDays(-1)),appointment_id:null},
+{id:'wl5',customer_id:'c3',direction:'outbound',text:'Ciao! La laminazione ciglia dura circa 60 minuti e costa 45€ 🌸\nÈ un trattamento che dona alle ciglie un aspetto naturale ma più lungo e curvato.\n\nVuoi che ti trovi un appuntamento disponibile?',intent:'faq_answer',confidence:0.96,status:'delivered',date:fmtDate(addDays(-1)),appointment_id:null},
+{id:'wl6',customer_id:'c3',direction:'inbound',text:'Vorrei fare una manicure venerdì pomeriggio',intent:'booking_request',confidence:0.89,status:'read',date:fmtDate(addDays(0)),appointment_id:null},
+{id:'wl7',customer_id:'c3',direction:'outbound',text:'Ciao Alessia 🌸 Certo! Per venerdì pomeriggio abbiamo disponibilità alle:\n\n🕐 14:30\n🕐 15:00\n🕐 16:30\n🕐 17:00\n\nLa manicure semipermanente dura 45 min e costa 25€. Quale orario preferisci?',intent:'booking_options',confidence:0.95,status:'delivered',date:fmtDate(addDays(0)),appointment_id:null},
+{id:'wl8',customer_id:'c2',direction:'outbound',text:'Ciao Chiara 🌸\nIl tuo appuntamento per Ceretta gambe complete è confermato!\n\n📅 Giovedì 23/01\n🕐 11:00\n📍 Via Roma 42, Milano\n\nCi vediamo da Glow Beauty Studio! ✨',intent:'booking_confirmed',confidence:0.99,status:'read',date:fmtDate(addDays(-3)),appointment_id:'ap3'},
+{id:'wl9',customer_id:'c6',direction:'inbound',text:'Ciao, vorrei sapere se avete promozioni attive',intent:'faq_promo',confidence:0.91,status:'read',date:fmtDate(addDays(-4)),appointment_id:null},
+{id:'wl10',customer_id:'c6',direction:'outbound',text:'Ciao Elena 🌸 Sì! Al momento abbiamo:\n\n✨ Trattamento viso: -20% fino al 30 giugno\n💅 Pacchetto manicure: 5 sedute a 110€\n💆 Pacchetto relax: 3 massaggi a 130€\n\nCome cliente VIP hai sempre accesso a offerte esclusive! 💕',intent:'faq_answer',confidence:0.97,status:'delivered',date:fmtDate(addDays(-4)),appointment_id:null},
+],
+
+notifications:[
+{id:'n1',type:'booking_request',text:'Nuova richiesta di prenotazione da Alessia Conti',read:false,date:fmtDate(addDays(0))},
+{id:'n2',type:'review',text:'Nuova recensione da Sofia Mancini (5 stelle)',read:false,date:fmtDate(addDays(0))},
+{id:'n3',type:'reminder',text:'Promemoria: 2 appuntamenti oggi',read:true,date:fmtDate(today)},
+{id:'n4',type:'promo',text:'La promo GLOWFACE20 scade tra 30 giorni',read:true,date:fmtDate(addDays(-2))},
+],
+
+settings:{center_id:'bc1',booking_min_hours:3,booking_max_days:60,slot_interval:30,buffer_between:10,cancellation_hours:24,whatsapp_enabled:true,email_enabled:true,multi_center:false,auto_confirm:false,reminder_24h:true,theme:{primary:'#E8A7BB',bg:'#FFFFFF'},no_show_policy:'after_3'},
+
+users:[
+{id:'u1',name:'Martina Ferrari',email:'cliente@demo.it',role:'cliente',center_id:'bc1'},
+{id:'u2',name:'Giulia Rossi',email:'admin@glowbook.it',role:'admin_owner',center_id:'bc1'},
+{id:'u3',name:'Sara Bianchi',email:'staff@glowbook.it',role:'admin_staff',center_id:'bc1'},
+{id:'u4',name:'Laura Verdi',email:'reception@glowbook.it',role:'admin_reception',center_id:'bc1'},
+],
+};
+
+// ======================== CONTEXT ========================
+const Ctx=createContext();
+function Provider({children}){
+const[user,setUser]=useState(null);
+const[data,setData]=useState(MOCK);
+const[toasts,setToasts]=useState([]);
+const[page,setPage]=useState('login');
+const[prevPage,setPrevPage]=useState('login');
+const[notifCount,setNotifCount]=useState(2);
+
+const addToast=useCallback((msg,type='success')=>{
+const id=Date.now()+Math.random();
+setToasts(p=>[...p,{id,msg,type}]);
+setTimeout(()=>setToasts(p=>p.filter(t=>t.id!==id)),3500);
+},[]);
+
+const updateData=useCallback((entity,id,updates)=>{
+setData(p=>({...p,[entity]:p[entity].map(i=>i.id===id?{...i,...updates}:i)}));
+},[]);
+
+const addData=useCallback((entity,item)=>{
+setData(p=>({...p,[entity]:[...p[entity],item]}));
+},[]);
+
+const removeData=useCallback((entity,id)=>{
+setData(p=>({...p,[entity]:p[entity].filter(i=>i.id!==id)}));
+},[]);
+
+const navigate=useCallback((p)=>{
+setPrevPage(page);
+setPage(p);
+},[page]);
+
+const goBack=useCallback(()=>{
+setPage(prevPage);
+},[prevPage]);
+
+const login=useCallback((role)=>{
+const u=MOCK.users.find(x=>x.role===role);
+if(u){setUser(u);setPage(role==='cliente'?'home':'admin-dashboard');}
+},[]);
+
+const logout=useCallback(()=>{
+setUser(null);
+setPage('login');
+});
+
+const getCustomerTags=useCallback(c=>{
+const tags=[...c.tags];
+const days=c.last_visit?Math.floor((new Date()-new Date(c.last_visit))/864e5):999;
+if(c.no_shows>=3&&!tags.includes('Attenzione'))tags.push('Attenzione');
+if(c.no_shows>=2&&!tags.some(t=>t==='Da monitorare'))tags.push('Da monitorare');
+if(days>90&&!tags.includes('Inattivo'))tags.push('Inattivo');
+return tags.length?tags:['Cliente'];
+},[]);
+
+return <Ctx.Provider value={{user,data,setData,setUser,updateData,addData,removeData,toasts,addToast,page,setPage,navigate,goBack,login,logout,notifCount,setNotifCount,getCustomerTags}}>{children}</Ctx.Provider>;
+}
+const useApp=()=>useContext(Ctx);
+
+// ======================== TOAST ========================
+function Toasts(){
+const{toasts}=useApp();
+return <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[60] flex flex-col gap-2 max-w-sm px-4 w-full">
+{toasts.map(t=>(
+<div key={t.id} className="toast-enter px-4 py-3 rounded-2xl shadow-xl text-sm font-medium text-white flex items-center gap-2" style={{background:t.type==='success'?'linear-gradient(135deg,#16A34A,#15803D)':t.type==='error'?'linear-gradient(135deg,#DC2626,#B91C1C)':'linear-gradient(135deg,#E8A7BB,#D48FA3)'}}>
+{t.type==='success'?'✓':t.type==='error'?'✕':'ℹ'}{t.msg}
+</div>
+))}
+</div>;
+}
+
+// ======================== LOGO ========================
+function Logo({size='md'}){
+const sz=size==='sm'?'text-lg':size==='lg'?'text-3xl':'text-xl';
+return <span className={`font-display font-bold ${sz}`}>
+<span className="text-primary">Glow</span><span style={{color:'#E8A7BB'}}>Book</span>
+</span>;
+}
+
+// ======================== LOGIN ========================
+function Login(){
+const{login}=useApp();
+return <div className="min-h-screen gradient-hero flex flex-col items-center justify-center px-6 animate-fade">
+<div className="text-center mb-12">
+<div className="text-6xl mb-4 animate-float">🌸</div>
+<Logo size="lg"/>
+<p className="text-sm text-secondary mt-2 max-w-xs mx-auto leading-relaxed">Gestione appuntamenti per centri estetici</p>
+</div>
+<div className="w-full max-w-sm space-y-4">
+<div className="flex gap-3">
+<button onClick={()=>login('cliente')} className="flex-1 flex items-center justify-center gap-2 py-3.5 px-4 border border-[#EAEAEA] rounded-2xl hover:bg-gray-50 transition-all text-sm font-medium bg-white shadow-sm">
+<svg viewBox="0 0 24 24" className="w-5 h-5"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+Google
+</button>
+<button onClick={()=>login('cliente')} className="flex-1 flex items-center justify-center gap-2 py-3.5 px-4 border border-[#EAEAEA] rounded-2xl hover:bg-gray-50 transition-all text-sm font-medium bg-white shadow-sm">
+<svg viewBox="0 0 24 24" className="w-5 h-5"><path fill="currentColor" d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+Apple
+</button>
+</div>
+<div className="text-center text-xs text-secondary mt-6 mb-3 font-medium tracking-wide">ENTRA COME</div>
+<div className="grid grid-cols-2 gap-3">
+{[{role:'cliente',label:'Cliente',icon:'👤',bg:'from-pink-50 to-white'},{role:'admin_owner',label:'Admin Owner',icon:'👑',bg:'from-amber-50 to-white'},{role:'admin_staff',label:'Staff',icon:'✨',bg:'from-blue-50 to-white'},{role:'admin_reception',label:'Reception',icon:'📋',bg:'from-green-50 to-white'}].map(it=>(
+<button key={it.role} onClick={()=>login(it.role)} className={`bg-gradient-to-br ${it.bg} border border-[#EAEAEA] rounded-2xl p-5 hover:shadow-md transition-all text-center active:scale-95`}>
+<div className="text-3xl mb-2">{it.icon}</div>
+<div className="text-sm font-semibold text-primary">{it.label}</div>
+</button>
+))}
+</div>
+</div>
+<div className="mt-10 text-xs text-secondary">© 2025 GlowBook — SaaS per centri estetici</div>
+</div>;
+}
+
+// ======================== HEADER ========================
+function Header({title,back,showBack,subtitle,rightAction}){
+const{page,navigate}=useApp();
+return <header className="sticky top-0 bg-white/95 backdrop-blur-xl border-b border-[#F0EEF0] z-30">
+<div className="flex items-center justify-between px-5 py-3.5 max-w-lg mx-auto">
+<div className="flex items-center gap-3 min-w-0">
+{showBack&&<button onClick={back||(()=>navigate('home'))} className="p-1.5 -ml-2 rounded-xl hover:bg-gray-50 transition-all"><Icons.ChevronLeft/></button>}
+<div className="min-w-0">
+<h1 className="font-semibold text-[17px] leading-tight truncate">{title}</h1>
+{subtitle&&<p className="text-xs text-secondary mt-0.5 truncate">{subtitle}</p>}
+</div>
+</div>
+{rightAction||<button onClick={()=>navigate(page?.startsWith('admin')?'admin-settings':'profile')} className="p-2 rounded-xl hover:bg-gray-50 transition-all text-secondary"><Icons.User/></button>}
+</div>
+</header>;
+}
+
+// ======================== CUSTOMER NAV ========================
+function CustNav(){
+const{page,navigate}=useApp();
+const items=[{id:'home',label:'Home',icon:Icons.Home},{id:'book',label:'Prenota',icon:Icons.Calendar},{id:'services',label:'Servizi',icon:Icons.Services},{id:'my-bookings',label:'Prenotazioni',icon:Icons.Bookmark},{id:'profile',label:'Profilo',icon:Icons.User}];
+return <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-[#F0EEF0] z-40 pb-safe">
+<div className="flex justify-around items-center h-[72px] max-w-lg mx-auto px-2">
+{items.map(it=>{const active=page===it.id;return <button key={it.id} onClick={()=>navigate(it.id)} className={`nav-item flex-1 ${active?'active':''}`}>
+<it.icon w={active?'6':'6'} h={active?'6':'6'}/>
+<span className="text-[10px] font-semibold">{it.label}</span>
+</button>})}
+</div>
+</nav>;
+}
+
+// ======================== ADMIN NAV ========================
+function AdminNav(){
+const{page,navigate,logout}=useApp();
+const[menu,setMenu]=useState(false);
+const items=[{id:'admin-dashboard',label:'Dashboard',icon:Icons.Home},{id:'admin-calendar',label:'Calendario',icon:Icons.Calendar},{id:'admin-requests',label:'Richieste',icon:Icons.Bookmark},{id:'admin-customers',label:'Clienti',icon:Icons.Users},{id:'admin-settings',label:'Impostazioni',icon:Icons.Settings}];
+const allItems=[...items,{id:'admin-services',label:'Servizi',icon:Icons.Services},{id:'admin-promotions',label:'Promo',icon:Icons.Gift},{id:'admin-packages',label:'Pacchetti',icon:Icons.Package},{id:'admin-reviews',label:'Recensioni',icon:Icons.Star},{id:'admin-whatsapp',label:'WhatsApp',icon:Icons.MessageCircle},{id:'admin-stats',label:'Statistiche',icon:Icons.BarChart}];
+return <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-[#F0EEF0] z-40 pb-safe">
+<div className="flex items-center h-[72px] max-w-lg mx-auto px-2">
+<button onClick={()=>setMenu(!menu)} className="p-2 rounded-xl hover:bg-gray-50 transition-all text-secondary mr-1"><Icons.Menu/></button>
+<div className="flex-1 flex justify-around">
+{items.map(it=>{const active=page===it.id;return <button key={it.id} onClick={()=>navigate(it.id)} className={`nav-item flex-1 ${active?'active':''}`}>
+<it.icon w="5" h="5"/>
+<span className="text-[9px] font-semibold">{it.label}</span>
+</button>})}
+</div>
+<button onClick={logout} className="p-2 rounded-xl hover:bg-red-50 transition-all text-red-400"><Icons.LogOut/></button>
+</div>
+{menu&&<div className="fixed inset-0 bg-black/20 z-50" onClick={()=>setMenu(false)}>
+<div className="absolute right-0 top-0 bottom-[72px] w-80 bg-white shadow-2xl animate-slide-left overflow-y-auto" onClick={e=>e.stopPropagation()}>
+<div className="p-6">
+<div className="flex items-center gap-3 mb-6">
+<div className="w-10 h-10 rounded-full gradient-pink flex items-center justify-center">🌸</div>
+<div><div className="font-semibold text-sm">GlowBook</div><div className="text-xs text-secondary">Admin Panel</div></div>
+</div>
+<div className="space-y-1">
+{allItems.map(it=>{const active=page===it.id;return <button key={it.id} onClick={()=>{navigate(it.id);setMenu(false);}} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all ${active?'gradient-card font-semibold':'text-secondary hover:bg-gray-50'}`}>
+<it.icon w="5" h="5"/>{it.label}
+</button>})}
+<hr className="my-3 border-[#F0EEF0]"/>
+<button onClick={()=>{logout();setMenu(false);}} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-red-500 hover:bg-red-50 transition-all">
+<Icons.LogOut w="5" h="5"/>Esci
+</button>
+</div>
+</div>
+</div>
+</div>}
+</nav>;
+}
+
+// ======================== MINI CHART ========================
+function MiniChart({values,activeIndex}){
+const max=Math.max(...values,1);
+return <div className="mini-chart">{values.map((v,i)=>(
+<div key={i} className={`mini-bar ${i===activeIndex?'active':''}`} style={{height:`${(v/max)*100}%`,opacity:i===activeIndex?1:0.5}}/>
+))}</div>;
+}
+
+// ======================== CUSTOMER HOME ========================
+function CustHome(){
+const{navigate,data}=useApp();
+const center=data.beauty_centers[0];
+const pending=data.appointments.filter(a=>a.status==='pending'&&a.customer_id==='c1');
+const todayAppts=data.appointments.filter(a=>a.date===todayStr);
+const popular=data.services.filter(s=>s.popular);
+const reviews=data.reviews.filter(r=>r.approved).slice(0,3);
+const promos=data.promotions.filter(p=>p.active).slice(0,2);
+
+return <div className="animate-fade pb-24">
+{/* Hero */}
+<div className="gradient-hero px-5 pt-12 pb-10">
+<div className="max-w-lg mx-auto">
+<div className="flex items-center gap-3 mb-6">
+<div className="w-10 h-10 rounded-full gradient-pink flex items-center justify-center text-lg">🌸</div>
+<Logo/>
+</div>
+<h2 className="font-display text-[26px] font-bold text-primary leading-tight mb-3">Prenota la tua<br/>pausa beauty ✨</h2>
+<p className="text-sm text-secondary leading-relaxed max-w-xs">Scegli il trattamento, invia la richiesta e Glow Beauty Studio ti confermerà l'appuntamento.</p>
+<button onClick={()=>navigate('book')} className="btn-primary mt-6 shadow-lg shadow-pink-200/50">Prenota ora</button>
+</div>
+</div>
+
+{/* Pending */}
+{pending.length>0&&<div className="px-5 py-4">
+<div className="card p-4 bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200/50">
+<div className="flex items-center gap-2 mb-2">
+<div className="w-6 h-6 rounded-full bg-amber-400 flex items-center justify-center text-white text-xs">⏳</div>
+<span className="font-semibold text-sm text-amber-800">Richieste in attesa</span>
+</div>
+{pending.map(a=>{const svcs=a.services.map(sid=>data.services.find(s=>s.id===sid)?.name).join(' + ');
+return <p key={a.id} className="text-xs text-amber-700 ml-8">{svcs} — {a.date} {a.time}</p>})}
+</div>
+</div>}
+
+{/* Quick Actions */}
+<div className="px-5 py-4">
+<div className="grid grid-cols-4 gap-3">
+{[{icon:'💅',label:'Mani',page:'book'},{icon:'💆‍♀️',label:'Viso',page:'book'},{icon:'👀',label:'Ciglia',page:'book'},{icon:'💄',label:'Trucco',page:'book'}].map(a=>(
+<button key={a.label} onClick={()=>navigate(a.page)} className="flex flex-col items-center gap-1.5">
+<div className="w-14 h-14 rounded-2xl gradient-card flex items-center justify-center text-2xl shadow-sm">{a.icon}</div>
+<span className="text-[11px] font-medium text-secondary">{a.label}</span>
+</button>
+))}
+</div>
+</div>
+
+{/* Popular Services */}
+<div className="px-5 py-4">
+<div className="flex items-center justify-between mb-3">
+<h3 className="font-semibold text-base">Più richiesti</h3>
+<button onClick={()=>navigate('services')} className="text-xs font-semibold" style={{color:'#E8A7BB'}}>Vedi tutti →</button>
+</div>
+<div className="flex gap-3 overflow-x-auto hide-scrollbar -mx-5 px-5">
+{popular.map(s=>(
+<button key={s.id} onClick={()=>navigate('book')} className="card p-4 min-w-[170px] flex-shrink-0 text-left active:scale-95 transition-all">
+<div className="w-10 h-10 rounded-xl gradient-pink flex items-center justify-center text-xl mb-3">{s.icon}</div>
+<h4 className="text-sm font-semibold mb-1">{s.name}</h4>
+<div className="flex items-center gap-2 text-xs text-secondary">
+<span>{s.duration} min</span>
+<span className="w-1 h-1 rounded-full bg-gray-300"/>
+<span className="font-semibold" style={{color:'#E8A7BB'}}>{s.price} €</span>
+</div>
+</button>
+))}
+</div>
+</div>
+
+{/* Next Available */}
+<div className="px-5 py-4">
+<h3 className="font-semibold text-base mb-3">Prossimi slot liberi</h3>
+<div className="grid grid-cols-4 gap-2">
+{[1,2,3,4].map(d=>{const date=addDays(d);const dayShort=['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
+return <button key={d} onClick={()=>navigate('book')} className="card p-3 text-center hover:border-pink-200 transition-all active:scale-95">
+<div className="text-[10px] text-secondary font-medium">{dayShort[date.getDay()]}</div>
+<div className="text-lg font-bold leading-none mt-1">{date.getDate()}</div>
+<div className="text-[10px] font-semibold mt-1" style={{color:'#E8A7BB'}}>Libero</div>
+</button>})}
+</div>
+</div>
+
+{/* Promos */}
+{promos.length>0&&<div className="px-5 py-4">
+<div className="flex items-center justify-between mb-3">
+<h3 className="font-semibold text-base">Promo attive</h3>
+<button onClick={()=>navigate('promotions')} className="text-xs font-semibold" style={{color:'#E8A7BB'}}>Tutte →</button>
+</div>
+{promos.map(p=>(
+<div key={p.id} className="card p-4 mb-2 bg-gradient-to-r from-pink-50 to-white border-pink-100">
+<div className="flex items-center justify-between">
+<div>
+<h4 className="font-semibold text-sm">{p.title}</h4>
+<p className="text-xs text-secondary mt-0.5">{p.desc}</p>
+</div>
+<div className="bg-gradient-to-br from-pink-400 to-pink-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-sm">-{p.discount}%</div>
+</div>
+</div>
+))}
+</div>}
+
+{/* Reviews */}
+<div className="px-5 py-4">
+<h3 className="font-semibold text-base mb-3">Dicono di noi</h3>
+<div className="flex gap-3 overflow-x-auto hide-scrollbar -mx-5 px-5">
+{reviews.map(r=>{const cust=data.customers.find(c=>c.id===r.customer_id);
+return <div key={r.id} className="card p-4 min-w-[260px] flex-shrink-0">
+<div className="flex items-center gap-2 mb-2">
+<span className="text-lg">{cust?.avatar}</span>
+<div>
+<div className="text-sm font-semibold">{cust?.name?.split(' ')[0]}</div>
+<div className="flex gap-0.5">{[1,2,3,4,5].map(i=><span key={i} className={i<=r.rating?'text-yellow-400 text-xs':'text-gray-200 text-xs'}>★</span>)}</div>
+</div>
+</div>
+<p className="text-xs text-secondary leading-relaxed line-clamp-2">"{r.comment}"</p>
+</div>})}
+</div>
+</div>
+
+{/* Center Info */}
+<div className="px-5 py-4 pb-24">
+<div className="card p-5">
+<div className="flex items-center gap-3 mb-4">
+<div className="w-12 h-12 rounded-2xl gradient-pink flex items-center justify-center text-2xl">{center.logo}</div>
+<div>
+<h4 className="font-semibold">{center.name}</h4>
+<p className="text-xs text-secondary">{center.address}</p>
+</div>
+</div>
+<div className="space-y-3">
+<div className="flex items-center gap-3">
+<div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-secondary"><Icons.Clock w="4" h="4"/></div>
+<div className="text-sm">Lun-Ven 09-19 • Sab 09-18</div>
+</div>
+<div className="flex items-center gap-3">
+<div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-secondary"><Icons.Phone w="4" h="4"/></div>
+<div className="text-sm">{center.phone}</div>
+</div>
+<div className="flex items-center gap-3">
+<div className="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center text-green-500"><Icons.MessageCircle w="4" h="4"/></div>
+<div className="text-sm text-green-600">{center.whatsapp}</div>
+</div>
+</div>
+</div>
+</div>
+</div>;
+}
+
+// ======================== BOOKING FLOW ========================
+function BookingFlow(){
+const{navigate,data,addData,addToast}=useApp();
+const[step,setStep]=useState(1);
+const[selSvcs,setSelSvcs]=useState([]);
+const[selDate,setSelDate]=useState(null);
+const[selTime,setSelTime]=useState(null);
+const[notes,setNotes]=useState('');
+const[selCat,setSelCat]=useState('Tutti');
+
+const toggleSvc=s=>{setSelSvcs(p=>p.find(x=>x.id===s.id)?p.filter(x=>x.id!==s.id):[...p,s])};
+const totalDur=selSvcs.reduce((a,s)=>a+s.duration,0)+(selSvcs.length>1?(selSvcs.length-1)*10:0);
+const totalPrice=selSvcs.reduce((a,s)=>a+s.price,0);
+
+const cats=['Tutti',...data.categories.filter(c=>c!=='Pacchetti')];
+const filtered=selCat==='Tutti'?data.services:data.services.filter(s=>s.cat===selCat&&s.active);
+
+const next7=Array.from({length:7},(_,i)=>{const d=addDays(i);return{date:fmtDate(d),day:dayShort[d.getDay()],num:d.getDate(),month:monthShort[d.getMonth()]}});
+
+const genSlots=ds=>{
+const dow=new Date(ds).getDay();
+const dk=['sun','mon','tue','wed','thu','fri','sat'][dow];
+const hrs=data.working_hours[dk]||[];
+const slots=[];
+hrs.forEach(([st,end])=>{
+let[h,m]=st.split(':').map(Number);
+const[eh,em]=end.split(':').map(Number);
+const endM=eh*60+em;
+while(h*60+m<endM){
+const t=`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+const booked=data.appointments.some(a=>a.date===ds&&a.time===t&&!['cancelled_customer','cancelled_center'].includes(a.status));
+slots.push({time:t,available:!booked});
+m+=30;if(m>=60){h++;m-=60;}
+}
+});
+return slots;
+};
+
+const submit=()=>{
+const ap={id:'ap'+Date.now(),customer_id:'c1',services:selSvcs.map(s=>s.id),date:selDate,time:selTime,status:'pending',duration:totalDur,total_price:totalPrice,notes,staff_id:data.services[0]?.staff?.[0]||'st1',created_at:todayStr};
+addData('appointments',ap);
+addToast('Richiesta inviata con successo! 🌸');
+setStep(5);
+};
+
+if(step===5)return <div className="animate-fade pb-24">
+<Header title="Prenotazione"/>
+<div className="flex flex-col items-center justify-center px-6 py-16">
+<div className="w-20 h-20 rounded-full bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center mb-5 animate-bounce-in">
+<svg viewBox="0 0 24 24" fill="none" stroke="#16A34A" strokeWidth="3" className="w-10 h-10"><path d="M20 6L9 17l-5-5"/></svg>
+</div>
+<h2 className="font-display text-xl font-bold text-center mb-2">Richiesta inviata! 🌸</h2>
+<p className="text-sm text-secondary text-center mb-6 max-w-xs">Glow Beauty Studio ti confermerà a breve. Riceverai una notifica su WhatsApp.</p>
+<div className="card p-5 w-full max-w-sm mb-5 space-y-2">
+<p className="text-sm font-semibold">{selSvcs.map(s=>s.name).join(' + ')}</p>
+<p className="text-sm text-secondary">{selDate} alle {selTime}</p>
+<p className="text-sm text-secondary">{totalDur} min • <span className="font-semibold" style={{color:'#E8A7BB'}}>{totalPrice} €</span></p>
+</div>
+<button onClick={()=>navigate('my-bookings')} className="btn-primary w-full max-w-sm">Vedi prenotazioni</button>
+<button onClick={()=>navigate('home')} className="btn-ghost w-full max-w-sm mt-2">Torna alla home</button>
+</div>
+</div>;
+
+return <div className="animate-fade pb-24">
+<Header title={step===1?'Scegli servizi':step===2?'Scegli giorno':step===3?'Scegli orario':'Riepilogo'} back={()=>step>1?setStep(step-1):navigate('home')} showBack/>
+<div className="flex justify-center gap-2 py-3">
+{[1,2,3,4].map(s=><div key={s} className={`h-1.5 rounded-full transition-all duration-300 ${s<=step?'w-8' : 'w-4'} ${s<=step?'bg-gradient-to-r from-pink-400 to-pink-500':'bg-gray-200'}`}/>)}
+</div>
+
+{step===1&&<div className="px-5">
+<div className="flex gap-2 overflow-x-auto hide-scrollbar -mx-5 px-5 mb-4">
+{cats.map(c=><button key={c} onClick={()=>setSelCat(c)} className={`flex-shrink-0 px-4 py-2 rounded-full text-xs font-semibold transition-all ${selCat===c?'bg-gradient-to-r from-pink-400 to-pink-500 text-white shadow-sm':'bg-gray-100 text-secondary'}`}>{c}</button>)}
+</div>
+<div className="space-y-2">
+{filtered.map(s=>{const sel=selSvcs.find(x=>x.id===s.id);
+return <button key={s.id} onClick={()=>toggleSvc(s)} className={`w-full card p-4 flex items-center justify-between text-left transition-all active:scale-[0.99] ${sel?'border-pink-300 bg-pink-50/50':''}`}>
+<div className="flex items-center gap-3">
+<div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-lg">{s.icon}</div>
+<div>
+<div className="text-sm font-semibold">{s.name}</div>
+<div className="text-xs text-secondary">{s.duration} min • {s.price} €</div>
+</div>
+</div>
+<div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${sel?'border-pink-400 bg-pink-400':'border-gray-200'}`}>
+{sel&&<svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" className="w-3.5 h-3.5"><path d="M20 6L9 17l-5-5"/></svg>}
+</div>
+</button>})}
+</div>
+{selSvcs.length>0&&<div className="sticky bottom-[72px] bg-white/95 backdrop-blur-xl border-t border-[#F0EEF0] p-4 -mx-5 px-5">
+<div className="flex items-center justify-between mb-3">
+<span className="text-sm text-secondary">{selSvcs.length} servizi • {totalDur} min</span>
+<span className="text-lg font-bold" style={{color:'#E8A7BB'}}>{totalPrice} €</span>
+</div>
+<button onClick={()=>setStep(2)} className="btn-primary w-full">Continua</button>
+</div>}
+</div>}
+
+{step===2&&<div className="px-5">
+<p className="text-sm text-secondary mb-4">Seleziona il giorno preferito</p>
+<div className="flex gap-2 overflow-x-auto hide-scrollbar -mx-5 px-5 mb-6">
+{next7.map(d=><button key={d.date} onClick={()=>{setSelDate(d.date);setStep(3);}} className={`flex-shrink-0 card p-3 min-w-[72px] text-center transition-all active:scale-95 ${selDate===d.date?'border-pink-300 bg-pink-50':''}`}>
+<div className="text-[10px] text-secondary font-medium">{d.day}</div>
+<div className="text-xl font-bold my-0.5">{d.num}</div>
+<div className="text-[10px] text-secondary">{d.month}</div>
+</button>)}
+</div>
+<div>
+<p className="text-xs text-secondary mb-2 font-medium">Oppure prenota più avanti</p>
+<div className="grid grid-cols-4 gap-2">
+{[7,14,21,30].map(d=>{const date=addDays(d);
+return <button key={d} onClick={()=>{setSelDate(fmtDate(date));setStep(3);}} className="card p-3 text-center active:scale-95 transition-all">
+<div className="text-sm font-semibold">{date.getDate()}/{date.getMonth()+1}</div>
+<div className="text-[10px] text-secondary mt-0.5">+{d} giorni</div>
+</button>})}
+</div>
+</div>
+</div>}
+
+{step===3&&selDate&&<div className="px-5">
+<p className="text-sm text-secondary mb-1">Slot disponibili per</p>
+<p className="font-semibold text-base mb-4">{selDate}</p>
+<div className="grid grid-cols-3 gap-2">
+{genSlots(selDate).map(sl=><button key={sl.time} onClick={()=>{setSelTime(sl.time);setStep(4);}} disabled={!sl.available} className={`p-3.5 rounded-xl text-sm font-semibold text-center transition-all ${sl.available?'slot-available hover:opacity-80 active:scale-95':'slot-booked opacity-40 cursor-not-allowed'}`}>
+{sl.time}
+</button>)}
+</div>
+</div>}
+
+{step===4&&selDate&&selTime&&<div className="px-5 space-y-4">
+<div className="card p-5">
+<h3 className="font-semibold text-sm mb-3">Riepilogo</h3>
+<div className="space-y-2">
+{selSvcs.map(s=><div key={s.id} className="flex justify-between text-sm"><span>{s.name}</span><span className="font-semibold">{s.price} €</span></div>)}
+<hr className="my-2 border-[#F0EEF0]"/>
+<div className="flex justify-between text-sm"><span className="text-secondary">Durata</span><span>{totalDur} min</span></div>
+<div className="flex justify-between text-base font-bold mt-1"><span>Totale</span><span style={{color:'#E8A7BB'}}>{totalPrice} €</span></div>
+</div>
+</div>
+<div className="card p-5">
+<label className="text-sm font-semibold mb-2 block">Note (opzionale)</label>
+<textarea value={notes} onChange={e=>setNotes(e.target.value)} placeholder="Es. Allergie, preferenze..." className="w-full input-field resize-none" rows={3}/>
+</div>
+<button onClick={submit} className="btn-primary w-full py-4 text-base">Invia richiesta</button>
+<p className="text-xs text-secondary text-center">La richiesta verrà confermata da Glow Beauty Studio via WhatsApp</p>
+</div>}
+</div>;
+}
+
+// ======================== CUSTOMER SERVICES ========================
+function CustServices(){
+const{navigate,data,addToast}=useApp();
+const[cat,setCat]=useState('Tutti');
+const cats=['Tutti',...data.categories.filter(c=>c!=='Pacchetti')];
+const filtered=cat==='Tutti'?data.services:data.services.filter(s=>s.cat===cat);
+return <div className="animate-fade pb-24">
+<Header title="Servizi" back={()=>navigate('home')} showBack/>
+<div className="px-5 py-3">
+<div className="flex gap-2 overflow-x-auto hide-scrollbar">
+{cats.map(c=><button key={c} onClick={()=>setCat(c)} className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-all ${cat===c?'bg-gradient-to-r from-pink-400 to-pink-500 text-white':'bg-gray-100 text-secondary'}`}>{c}</button>)}
+</div>
+</div>
+<div className="px-5 space-y-3">
+{filtered.map(s=><div key={s.id} className="card p-5">
+<div className="flex items-start gap-4">
+<div className="w-12 h-12 rounded-2xl gradient-pink flex items-center justify-center text-2xl flex-shrink-0">{s.icon}</div>
+<div className="flex-1">
+<span className="text-[10px] font-bold uppercase tracking-wider" style={{color:'#E8A7BB'}}>{s.cat}</span>
+<h3 className="font-semibold text-base mt-0.5">{s.name}</h3>
+<p className="text-xs text-secondary mt-1 leading-relaxed">{s.desc}</p>
+<div className="flex items-center gap-3 mt-3">
+<span className="flex items-center gap-1 text-xs text-secondary"><Icons.Clock w="4" h="4"/> {s.duration} min</span>
+<span className="font-bold text-lg" style={{color:'#E8A7BB'}}>{s.price} €</span>
+</div>
+</div>
+</div>
+<button onClick={()=>addToast(`${s.name} aggiunto alla prenotazione! 💅`)} className="mt-4 btn-outline text-sm w-full">Aggiungi alla prenotazione</button>
+</div>)}
+</div>
+</div>;
+}
+
+// ======================== MY BOOKINGS ========================
+function MyBookings(){
+const{navigate,data,updateData,addToast}=useApp();
+const[filter,setFilter]=useState('all');
+const appts=data.appointments.filter(a=>a.customer_id==='c1');
+const filtered=filter==='all'?appts:appts.filter(a=>a.status===filter);
+const labels={pending:'In attesa',confirmed:'Confermata',rejected:'Rifiutata',completed:'Completata',cancelled_customer:'Annullata',new_time:'Nuovo orario'};
+const badgeCls={pending:'badge-pending',confirmed:'badge-confirmed',rejected:'badge-rejected',completed:'badge-completed',cancelled_customer:'badge-cancelled',new_time:'badge-new-time'};
+
+return <div className="animate-fade pb-24">
+<Header title="Le mie prenotazioni" back={()=>navigate('home')} showBack/>
+<div className="px-5 py-3">
+<div className="flex gap-2 overflow-x-auto hide-scrollbar">
+{[{id:'all',label:'Tutte'},{id:'pending',label:'In attesa'},{id:'confirmed',label:'Confermate'},{id:'completed',label:'Completate'}].map(f=>
+<button key={f.id} onClick={()=>setFilter(f.id)} className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${filter===f.id?'bg-gradient-to-r from-pink-400 to-pink-500 text-white':'bg-gray-100 text-secondary'}`}>{f.label}</button>)}
+</div>
+</div>
+<div className="px-5 space-y-3">
+{filtered.length===0&&<div className="text-center py-12"><div className="text-4xl mb-3">📅</div><p className="text-sm text-secondary">Nessuna prenotazione</p></div>}
+{filtered.map(a=>{const svcs=a.services.map(sid=>data.services.find(s=>s.id===sid)?.name).join(' + ');
+return <div key={a.id} className="card p-4">
+<div className="flex items-center justify-between mb-2">
+<span className={`status-badge ${badgeCls[a.status]||''}`}>{labels[a.status]||a.status}</span>
+<span className="text-xs text-secondary font-mono">{a.date}</span>
+</div>
+<h4 className="font-semibold text-sm">{svcs}</h4>
+<div className="flex items-center gap-3 mt-1 text-xs text-secondary">
+<span>{a.time}</span><span>•</span><span>{a.duration} min</span><span>•</span><span className="font-semibold" style={{color:'#E8A7BB'}}>{a.total_price} €</span>
+</div>
+{a.notes&&<p className="text-xs text-secondary mt-2 italic">"{a.notes}"</p>}
+<div className="flex gap-2 mt-3">
+{a.status==='pending'&&<button onClick={()=>{updateData('appointments',a.id,{status:'cancelled_customer'});addToast('Prenotazione annullata','error');}} className="text-xs text-red-500 font-semibold px-3 py-1.5 rounded-xl hover:bg-red-50 transition-all">Annulla</button>}
+{a.status==='completed'&&<button onClick={()=>addToast('Puoi lasciare una recensione!')} className="text-xs font-semibold px-3 py-1.5 rounded-xl hover:bg-pink-50 transition-all" style={{color:'#E8A7BB'}}>Lascia recensione</button>}
+</div>
+</div>})}
+</div>
+</div>;
+}
+
+// ======================== CUSTOMER PROFILE ========================
+function CustProfile(){
+const{navigate,data,logout}=useApp();
+const cust=data.customers.find(c=>c.id==='c1');
+const pkgPurchases=data.package_purchases.filter(pp=>pp.customer_id==='c1');
+return <div className="animate-fade pb-24">
+<Header title="Profilo" back={()=>navigate('home')} showBack/>
+<div className="px-5 py-6">
+<div className="flex flex-col items-center mb-6">
+<div className="w-20 h-20 rounded-full gradient-pink flex items-center justify-center text-3xl mb-3 shadow-sm">{cust?.avatar}</div>
+<h2 className="font-display text-xl font-bold">{cust?.name}</h2>
+<p className="text-xs text-secondary">{cust?.email}</p>
+<div className="flex gap-2 mt-2 flex-wrap justify-center">
+{cust?.tags.map(t=><span key={t} className="text-[10px] font-bold px-3 py-1 rounded-full bg-gradient-to-r from-pink-400 to-pink-500 text-white">{t}</span>)}
+<span className="text-[10px] font-semibold px-3 py-1 rounded-full bg-gray-100 text-secondary">{cust?.completed} visite</span>
+</div>
+</div>
+<div className="grid grid-cols-3 gap-3 mb-6">
+<div className="card p-3 text-center"><div className="text-lg font-bold" style={{color:'#E8A7BB'}}>{cust?.total_spent}€</div><div className="text-[10px] text-secondary">Speso</div></div>
+<div className="card p-3 text-center"><div className="text-lg font-bold">{cust?.completed}</div><div className="text-[10px] text-secondary">Visite</div></div>
+<div className="card p-3 text-center"><div className="text-lg font-bold text-yellow-500">4.7</div><div className="text-[10px] text-secondary">Rating</div></div>
+</div>
+<div className="card overflow-hidden">
+{[{icon:'📱',label:'Telefono',value:cust?.phone},{icon:'📧',label:'Email',value:cust?.email},{icon:'📅',label:'Ultima visita',value:cust?.last_visit},{icon:'🎂',label:'Compleanno',value:'15 Marzo'}].map((it,i,arr)=>
+<div key={it.label} className={`flex items-center justify-between py-3.5 px-5 ${i<arr.length-1?'border-b border-[#F0EEF0]':''}`}>
+<div className="flex items-center gap-3"><span>{it.icon}</span><span className="text-sm">{it.label}</span></div>
+<span className="text-sm font-medium">{it.value}</span>
+</div>)}
+</div>
+<div className="card mt-4 overflow-hidden">
+{[{label:'Pacchetti attivi',page:'packages'},{label:'Recensioni',page:'reviews'},{label:'Promozioni',page:'promotions'}].map((it,i,arr)=>
+<button key={it.label} onClick={()=>navigate(it.page)} className={`w-full flex items-center justify-between py-3.5 px-5 ${i<arr.length-1?'border-b border-[#F0EEF0]':''} hover:bg-gray-50 transition-all`}>
+<span className="text-sm">{it.label}</span><Icons.ChevronRight/>
+</button>)}
+</div>
+{pkgPurchases.length>0&&<div className="card mt-4 p-4">
+<h4 className="font-semibold text-sm mb-3">Pacchetti attivi</h4>
+{pkgPurchases.map(pp=>{const pkg=data.packages.find(p=>p.id===pp.package_id);
+return <div key={pp.id}>
+<div className="text-sm font-medium">{pkg?.name}</div>
+<div className="flex items-center gap-2 mt-2">
+<div className="flex-1 progress-bar"><div className="progress-fill" style={{width:`${(pp.used_sessions/pp.total_sessions)*100}%`}}/></div>
+<span className="text-xs font-semibold">{pp.used_sessions}/{pp.total_sessions}</span>
+</div>
+<div className="text-xs text-secondary mt-1">{pp.total_sessions-pp.used_sessions} sedute residue</div>
+</div>})}
+</div>}
+<button onClick={logout} className="w-full mt-6 py-3.5 text-red-500 text-sm font-semibold flex items-center justify-center gap-2 card hover:bg-red-50 transition-all">
+<Icons.LogOut w="4" h="4"/>Esci dall'account
+</button>
+</div>
+</div>;
+}
+
+// ======================== PROMOTIONS ========================
+function Promotions(){
+const{navigate,data}=useApp();
+const promos=data.promotions.filter(p=>p.active);
+return <div className="animate-fade pb-24">
+<Header title="Promozioni" back={()=>navigate('home')} showBack/>
+<div className="px-5 space-y-3 py-4">
+{promos.map(p=>{const svc=p.service_id?data.services.find(s=>s.id===p.service_id):null;
+return <div key={p.id} className="card p-5 bg-gradient-to-br from-pink-50 to-white border-pink-100">
+<div className="flex items-center justify-between mb-2">
+<span className="bg-gradient-to-br from-pink-400 to-pink-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-sm">-{p.discount}%</span>
+<span className="text-[10px] text-secondary">Fino al {p.valid_until}</span>
+</div>
+<h3 className="font-semibold text-base">{p.title}</h3>
+<p className="text-sm text-secondary mt-1 leading-relaxed">{p.desc}</p>
+{p.type==='package'&&<div className="mt-3 flex gap-2">
+<span className="text-xs bg-white px-2 py-1 rounded-lg font-medium">{p.sessions} sedute</span>
+<span className="text-xs bg-white px-2 py-1 rounded-lg line-through text-secondary">{p.regular_price} €</span>
+<span className="text-xs bg-white px-2 py-1 rounded-lg font-bold" style={{color:'#E8A7BB'}}>{p.package_price} €</span>
+</div>}
+{p.code&&<div className="mt-3 flex items-center gap-2 bg-white rounded-xl px-3 py-2 border border-pink-100">
+<span className="text-xs text-secondary">Codice:</span>
+<span className="text-sm font-bold font-mono">{p.code}</span>
+</div>}
+</div>})}
+<div className="card p-5 mt-4 bg-gradient-to-r from-green-50 to-green-100/50 border-green-200">
+<h4 className="font-semibold text-sm mb-2 text-green-800">💬 Anteprima messaggio WhatsApp</h4>
+<div className="bg-white rounded-xl p-3 text-sm shadow-sm">
+<p className="text-green-800">Ciao Martina 🌸</p>
+<p className="text-green-800 mt-1.5">Abbiamo una promo speciale per te! Il Trattamento viso idratante è scontato del 20% fino al 30 giugno.</p>
+<p className="text-green-800 mt-1.5">Prenota ora da GlowBook per approfittarne! 💆‍♀️</p>
+<p className="text-[10px] text-green-600 mt-2 text-right">Glow Beauty Studio</p>
+</div>
+</div>
+</div>
+</div>;
+}
+
+// ======================== ADMIN DASHBOARD ========================
+function AdminDash(){
+const{navigate,data}=useApp();
+const center=data.beauty_centers[0];
+const todayAppts=data.appointments.filter(a=>a.date===todayStr&&(a.status==='confirmed'||a.status==='completed'));
+const pending=data.appointments.filter(a=>a.status==='pending');
+const monthAppts=data.appointments.filter(a=>{const d=new Date(a.date);return d.getMonth()===today.getMonth()&&d.getFullYear()===today.getFullYear()});
+const completed=data.appointments.filter(a=>a.status==='completed');
+const revenue=completed.reduce((a,x)=>a+x.total_price,0);
+const avgR=data.reviews.filter(r=>r.approved).reduce((a,r)=>a+r.rating,0)/(data.reviews.filter(r=>r.approved).length||1);
+const noShowRate=(data.appointments.filter(a=>a.status==='no_show').length/data.appointments.length*100).toFixed(0);
+
+const svcCount={};
+data.appointments.forEach(a=>a.services.forEach(sid=>{svcCount[sid]=(svcCount[sid]||0)+1}));
+const topSvc=Object.entries(svcCount).sort((a,b)=>b[1]-a[1]).slice(0,5);
+
+const weekData=[12,8,15,10,18,14,9];
+
+return <div className="animate-fade pb-24">
+<Header title="Dashboard" subtitle={center.name}/>
+<div className="px-5 py-4 space-y-5">
+{/* Stats */}
+<div className="grid grid-cols-2 gap-3">
+{[
+{label:'Oggi',value:todayAppts.length,icon:'📅',bg:'from-blue-50 to-blue-100/50',sub:'appuntamenti'},
+{label:'In attesa',value:pending.length,icon:'⏳',bg:'from-amber-50 to-amber-100/50',sub:'richieste'},
+{label:'Mese',value:monthAppts.length,icon:'📊',bg:'from-green-50 to-green-100/50',sub:'prenotazioni'},
+{label:'Fatturato',value:`${revenue}€`,icon:'💰',bg:'from-pink-50 to-pink-100/50',sub:'stimato'},
+].map(s=><div key={s.label} className={`card p-4 bg-gradient-to-br ${s.bg}`}>
+<div className="text-2xl mb-1">{s.icon}</div>
+<div className="text-xl font-bold">{s.value}</div>
+<div className="text-[11px] text-secondary">{s.label} • {s.sub}</div>
+</div>)}
+</div>
+
+{/* Today */}
+<div>
+<div className="flex items-center justify-between mb-3">
+<h3 className="font-semibold text-sm">Appuntamenti oggi</h3>
+<button onClick={()=>navigate('admin-calendar')} className="text-xs font-semibold" style={{color:'#E8A7BB'}}>Calendario →</button>
+</div>
+{todayAppts.length===0&&<div className="card p-6 text-center text-sm text-secondary">Nessun appuntamento oggi</div>}
+{todayAppts.map(a=>{const cust=data.customers.find(c=>c.id===a.customer_id);const svcs=a.services.map(sid=>data.services.find(s=>s.id===sid)?.name).join(', ');const staff=data.staff.find(s=>s.id===a.staff_id);
+return <div key={a.id} className="card p-3.5 mb-2 flex items-center gap-3">
+<span className="text-xl">{cust?.avatar||'👤'}</span>
+<div className="flex-1 min-w-0">
+<div className="text-sm font-semibold truncate">{cust?.name}</div>
+<div className="text-[11px] text-secondary truncate">{svcs}</div>
+{staff&&<div className="text-[10px] text-secondary">{staff.avatar} {staff.name}</div>}
+</div>
+<div className="text-right">
+<div className="text-sm font-bold">{a.time}</div>
+<span className={`status-badge ${a.status==='completed'?'badge-completed':'badge-confirmed'}`}>{a.status==='completed'?'Completato':'Confermato'}</span>
+</div>
+</div>})}
+</div>
+
+{/* Pending */}
+{pending.length>0&&<div>
+<div className="flex items-center justify-between mb-3">
+<h3 className="font-semibold text-sm">Richieste in attesa</h3>
+<button onClick={()=>navigate('admin-requests')} className="text-xs font-semibold" style={{color:'#E8A7BB'}}>{pending.length} →</button>
+</div>
+{pending.map(a=>{const cust=data.customers.find(c=>c.id===a.customer_id);
+return <button key={a.id} onClick={()=>navigate('admin-requests')} className="w-full card p-3.5 mb-2 bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200/50 text-left flex items-center justify-between active:scale-[0.99] transition-all">
+<div>
+<div className="text-sm font-semibold">{cust?.name}</div>
+<div className="text-[11px] text-secondary">{a.date} {a.time} • {a.duration} min • {a.total_price} €</div>
+</div>
+<span className="status-badge badge-pending">In attesa</span>
+</button>})}
+</div>}
+
+{/* Weekly chart */}
+<div className="card p-4">
+<div className="flex items-center justify-between mb-3">
+<h3 className="font-semibold text-sm">Andamento settimanale</h3>
+<Icons.TrendingUp w="4" h="4"/>
+</div>
+<div className="flex items-end gap-3 h-24">
+{weekData.map((v,i)=>{const max=Math.max(...weekData);
+return <div key={i} className="flex-1 flex flex-col items-center gap-1">
+<div className="w-full rounded-t-lg bg-gradient-to-t from-pink-400 to-pink-300 transition-all" style={{height:`${(v/max)*100}%`,minHeight:'8px'}}/>
+<span className="text-[9px] text-secondary">{dayShort[i+1]||'Dom'}</span>
+</div>})}
+</div>
+</div>
+
+{/* Top services */}
+<div>
+<h3 className="font-semibold text-sm mb-3">Servizi più richiesti</h3>
+{topSvc.map(([sid,count],i)=>{const svc=data.services.find(s=>s.id===sid);const max=topSvc[0][1];
+return <div key={sid} className="flex items-center gap-3 mb-2.5">
+<span className="text-xs text-secondary w-5 font-mono">#{i+1}</span>
+<div className="flex-1">
+<div className="flex items-center justify-between mb-1">
+<span className="text-sm font-medium">{svc?.name}</span>
+<span className="text-xs text-secondary font-semibold">{count}</span>
+</div>
+<div className="progress-bar"><div className="progress-fill" style={{width:`${(count/max)*100}%`}}/></div>
+</div>
+</div>})}
+</div>
+
+{/* Quick stats */}
+<div className="grid grid-cols-3 gap-3">
+<div className="card p-3 text-center"><div className="text-lg font-bold text-green-600">{avgR.toFixed(1)}</div><div className="text-[10px] text-secondary">★ Recensioni</div></div>
+<div className="card p-3 text-center"><div className="text-lg font-bold text-red-500">{noShowRate}%</div><div className="text-[10px] text-secondary">No-show</div></div>
+<div className="card p-3 text-center"><div className="text-lg font-bold" style={{color:'#E8A7BB'}}>{data.customers.filter(c=>c.completed>=3).length}</div><div className="text-[10px] text-secondary">Ricorrenti</div></div>
+</div>
+
+{/* Alerts */}
+<div className="card p-4 bg-gradient-to-r from-red-50 to-orange-50 border-red-200/50">
+<h4 className="text-sm font-semibold text-red-700 mb-2 flex items-center gap-2"><Icons.AlertTriangle w="4" h="4"/>Alert operativi</h4>
+<ul className="text-xs text-red-600 space-y-1.5">
+<li>• Valentina Russo: inattiva da 95 giorni</li>
+<li>• {data.reviews.filter(r=>!r.approved).length} recensione/i in attesa</li>
+<li>• {pending.length} richiesta/he da gestire</li>
+</ul>
+</div>
+</div>
+</div>;
+}
+
+// ======================== ADMIN CALENDAR ========================
+function AdminCalendar(){
+const{navigate,data,updateData,addToast}=useApp();
+const[view,setView]=useState('week');
+const[selDate,setSelDate]=useState(todayStr);
+const[showBlock,setShowBlock]=useState(false);
+const[blockType,setBlockType]=useState('slot');
+const[blockTime,setBlockTime]=useState('');
+const[blockReason,setBlockReason]=useState('');
+
+const sel=new Date(selDate);
+const dow=sel.getDay();
+const monday=new Date(sel);monday.setDate(sel.getDate()-(dow===0?6:dow-1));
+
+const weekDays=Array.from({length:7},(_,i)=>{const d=new Date(monday);d.setDate(monday.getDate()+i);return{date:fmtDate(d),day:dayShort[d.getDay()],num:d.getDate(),today:fmtDate(d)===todayStr,sel:fmtDate(d)===selDate}});
+
+const genSlots=ds=>{
+const dk=['sun','mon','tue','wed','thu','fri','sat'][new Date(ds).getDay()];
+const hrs=data.working_hours[dk]||[];
+const slots=[];
+hrs.forEach(([st,end])=>{
+let[h,m]=st.split(':').map(Number);
+const[eh,em]=end.split(':').map(Number);
+while(h*60+m<eh*60+em){
+const t=`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+const ap=data.appointments.find(a=>a.date===ds&&a.time===t&&!['cancelled_customer','cancelled_center'].includes(a.status));
+const cust=ap?data.customers.find(c=>c.id===ap.customer_id):null;
+slots.push({time:t,ap,cust,status:ap?(ap.status==='pending'?'pending':'booked'):'available'});
+m+=30;if(m>=60){h++;m-=60;}
+}
+});
+return slots;
+};
+
+const slots=genSlots(selDate);
+const selDayAppts=slots.filter(s=>s.ap);
+
+return <div className="animate-fade pb-24">
+<Header title="Calendario" back={()=>navigate('admin-dashboard')} showBack/>
+<div className="px-5 py-4">
+<div className="flex gap-1.5 bg-gray-100 rounded-xl p-1 mb-4">
+{['day','week','month'].map(v=><button key={v} onClick={()=>setView(v)} className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all ${view===v?'bg-white shadow-sm text-primary':'text-secondary'}`}>{v==='day'?'Giorno':v==='week'?'Settimana':'Mese'}</button>)}
+</div>
+
+<div className="flex items-center justify-between mb-4">
+<button onClick={()=>{const d=new Date(selDate);d.setDate(d.getDate()-(view==='week'?7:1));setSelDate(fmtDate(d));}} className="p-2 rounded-xl hover:bg-gray-50"><Icons.ChevronLeft/></button>
+<div className="text-center">
+<div className="font-semibold text-sm">{selDate===todayStr?'Oggi':`${sel.getDate()} ${monthShort[sel.getMonth()]} ${sel.getFullYear()}`}</div>
+</div>
+<button onClick={()=>{const d=new Date(selDate);d.setDate(d.getDate()+(view==='week'?7:1));setSelDate(fmtDate(d));}} className="p-2 rounded-xl hover:bg-gray-50"><Icons.ChevronRight/></button>
+</div>
+
+{view==='week'&&<div className="flex gap-1.5 mb-4 overflow-x-auto">
+{weekDays.map(d=><button key={d.date} onClick={()=>setSelDate(d.date)} className={`flex-1 min-w-[48px] py-2.5 rounded-xl text-center transition-all ${d.today?'bg-gradient-to-br from-pink-400 to-pink-500 text-white shadow-sm':d.sel?'bg-pink-50 border border-pink-200':'bg-gray-50 hover:bg-gray-100'}`}>
+<div className="text-[10px] font-medium opacity-80">{d.day}</div>
+<div className="text-sm font-bold">{d.num}</div>
+{data.appointments.some(a=>a.date===d.date&&a.status==='confirmed')&&<div className={`w-1.5 h-1.5 rounded-full mx-auto mt-0.5 ${d.today?'bg-white':'bg-pink-400'}`}/>}
+</button>)}
+</div>}
+
+{view==='month'&&<div className="mb-4">
+<div className="grid grid-cols-7 gap-0.5 mb-1">
+{dayShort.map(d=><div key={d} className="text-center text-[10px] text-secondary py-2 font-medium">{d}</div>)}
+</div>
+{(()=>{const days=[];const fd=new Date(sel.getFullYear(),sel.getMonth(),1);const ld=new Date(sel.getFullYear(),sel.getMonth()+1,0);let sd=fd.getDay()||7;
+for(let i=1;i<sd;i++)days.push(null);
+for(let i=1;i<=ld.getDate();i++){const d=new Date(sel.getFullYear(),sel.getMonth(),i);days.push({date:fmtDate(d),num:i,today:fmtDate(d)===todayStr,sel:fmtDate(d)===selDate,hasAppt:data.appointments.some(a=>a.date===fmtDate(d)&&a.status==='confirmed')});}
+return <div className="grid grid-cols-7 gap-0.5">{days.map((d,i)=>d?<button key={i} onClick={()=>setSelDate(d.date)} className={`py-2.5 rounded-lg text-sm transition-all ${d.today?'bg-gradient-to-br from-pink-400 to-pink-500 text-white font-bold':d.sel?'bg-pink-50 border border-pink-200 font-semibold':'hover:bg-gray-50'}`}>
+{d.num}
+{d.hasAppt&&!d.today&&<div className="w-1 h-1 rounded-full bg-pink-400 mx-auto mt-0.5"/>}
+</button>:<div key={i}/>)}</div>})()}
+</div>}
+
+{view==='day'&&<div className="space-y-1.5">
+{slots.map(sl=><div key={sl.time} className={`flex items-center gap-3 p-3 rounded-xl transition-all ${sl.status==='available'?'bg-green-50/50 hover:bg-green-50':sl.status==='pending'?'bg-amber-50/50':'bg-blue-50/50'}`}>
+<span className="text-sm font-mono font-semibold w-14 text-secondary">{sl.time}</span>
+{sl.ap?<div className="flex-1 min-w-0">
+<div className="text-sm font-semibold truncate">{sl.cust?.name}</div>
+<div className="text-[11px] text-secondary truncate">{sl.ap.services.map(sid=>data.services.find(s=>s.id===sid)?.name).join(', ')}</div>
+<span className={`status-badge ${sl.status==='pending'?'badge-pending':'badge-confirmed'}`}>{sl.status==='pending'?'In attesa':'Confermato'}</span>
+</div>:<div className="flex-1 text-sm text-green-700 font-medium">Disponibile</div>}
+{sl.status==='available'&&<button onClick={()=>{setBlockTime(sl.time);setShowBlock(true);}} className="text-[10px] text-red-500 px-2 py-1 rounded-lg bg-white/80 font-semibold hover:bg-red-50">Blocca</button>}
+</div>)}
+</div>}
+
+{selDayAppts.length>0&&view==='day'&&<div className="mt-4">
+<h4 className="text-xs font-semibold text-secondary uppercase tracking-wider mb-2">{selDayAppts.length} appuntamenti</h4>
+</div>}
+</div>
+
+{showBlock&&<div className="fixed inset-0 bg-black/30 z-50 flex items-end" onClick={()=>setShowBlock(false)}>
+<div className="bg-white w-full rounded-t-3xl p-6 animate-slide" onClick={e=>e.stopPropagation()}>
+<div className="flex items-center justify-between mb-4">
+<h3 className="font-semibold text-lg">Blocca orario</h3>
+<button onClick={()=>setShowBlock(false)} className="p-1 rounded-lg hover:bg-gray-100"><Icons.X/></button>
+</div>
+<div className="space-y-4">
+<select value={blockType} onChange={e=>setBlockType(e.target.value)} className="w-full input-field">
+<option value="slot">Singolo slot ({blockTime})</option>
+<option value="morning">Mattinata</option>
+<option value="afternoon">Pomeriggio</option>
+<option value="day">Giornata intera</option>
+<option value="vacation">Ferie</option>
+</select>
+<input value={blockReason} onChange={e=>setBlockReason(e.target.value)} placeholder="Motivo (opzionale)" className="w-full input-field"/>
+<div className="flex gap-3">
+<button onClick={()=>{setShowBlock(false);addToast('Slot bloccato ✓');}} className="btn-primary flex-1">Conferma</button>
+<button onClick={()=>setShowBlock(false)} className="btn-ghost flex-1">Annulla</button>
+</div>
+</div>
+</div>
+</div>}
+</div>;
+}
+
+// ======================== ADMIN REQUESTS ========================
+function AdminRequests(){
+const{navigate,data,updateData,addData,addToast}=useApp();
+const[action,setAction]=useState(null);
+const[selReq,setSelReq]=useState(null);
+const[newTime,setNewTime]=useState('');
+const[rejectReason,setRejectReason]=useState('');
+
+const pending=data.appointments.filter(a=>a.status==='pending');
+const newTimeAppts=data.appointments.filter(a=>a.status==='new_time');
+
+const doAction=(apId,act)=>{
+const ap=data.appointments.find(a=>a.id===apId);
+const cust=data.customers.find(c=>c.id===ap?.customer_id);
+const svcs=ap?.services.map(sid=>data.services.find(s=>s.id===sid)?.name).join(' e ');
+
+if(act==='accept'){
+updateData('appointments',apId,{status:'confirmed'});
+addToast(`Richiesta di ${cust?.name} accettata ✓`);
+addData('whatsapp_logs',{id:'wl'+Date.now(),customer_id:ap.customer_id,direction:'outbound',text:`Ciao ${cust?.name?.split(' ')[0]} 🌸\nLa tua prenotazione è stata confermata!\n\n📅 ${ap.date} alle ${ap.time}\n💅 ${svcs}\n\nTi aspettiamo da Glow Beauty Studio ✨`,intent:'booking_confirmed',confidence:0.99,status:'delivered',date:todayStr,appointment_id:apId});
+addData('whatsapp_logs',{id:'wl'+(Date.now()+1),customer_id:ap.customer_id,direction:'outbound',text:`📧 Email di conferma inviata a ${cust?.email}`,intent:'email_sent',confidence:0.99,status:'delivered',date:todayStr,appointment_id:apId});
+}else if(act==='reject'){
+updateData('appointments',apId,{status:'rejected'});
+addToast(`Richiesta di ${cust?.name} rifiutata`,'error');
+addData('whatsapp_logs',{id:'wl'+Date.now(),customer_id:ap.customer_id,direction:'outbound',text:`Ciao ${cust?.name?.split(' ')[0]} 🌸\nPurtroppo non possiamo accettare la tua richiesta per il ${ap.date}.\n\n${rejectReason||'Ti invitiamo a scegliere un altro orario.'}\n\nCi scusiamo per il disagio 💕`,intent:'booking_rejected',confidence:0.95,status:'delivered',date:todayStr,appointment_id:apId});
+}else if(act==='newtime'){
+updateData('appointments',apId,{status:'new_time'});
+addToast(`Nuovo orario proposto a ${cust?.name}`);
+addData('whatsapp_logs',{id:'wl'+Date.now(),customer_id:ap.customer_id,direction:'outbound',text:`Ciao ${cust?.name?.split(' ')[0]} 🌸\nPer il ${ap.date} l'orario ${ap.time} non è disponibile.\n\nTi proponiamo: ${newTime||'15:00'}\n\nFammi sapere se va bene! 💕`,intent:'new_time_proposed',confidence:0.93,status:'delivered',date:todayStr,appointment_id:apId});
+}
+setAction(null);setSelReq(null);
+};
+
+return <div className="animate-fade pb-24">
+<Header title="Richieste" subtitle={`${pending.length} in attesa`} back={()=>navigate('admin-dashboard')} showBack/>
+<div className="px-5 py-4 space-y-3">
+{pending.length===0&&<div className="text-center py-12"><div className="text-4xl mb-3">✅</div><p className="text-sm text-secondary font-medium">Nessuna richiesta in attesa</p></div>}
+{pending.map(a=>{const cust=data.customers.find(c=>c.id===a.customer_id);const svcs=a.services.map(sid=>data.services.find(s=>s.id===sid)?.name).join(' + ');const staff=data.staff.find(s=>s.id===a.staff_id);
+return <div key={a.id} className="card p-4 bg-gradient-to-r from-amber-50 to-orange-50/50 border-amber-200/50">
+<div className="flex items-center justify-between mb-3">
+<div className="flex items-center gap-3">
+<span className="text-xl">{cust?.avatar}</span>
+<div>
+<div className="text-sm font-semibold">{cust?.name}</div>
+<div className="text-[11px] text-secondary">{cust?.phone}</div>
+</div>
+</div>
+<span className="status-badge badge-pending">In attesa</span>
+</div>
+<div className="card p-3 bg-white/60 rounded-xl mb-3">
+<div className="text-sm font-medium">{svcs}</div>
+<div className="flex items-center gap-3 mt-1.5 text-xs text-secondary">
+<span className="flex items-center gap-1"><Icons.Calendar w="4" h="4"/> {a.date}</span>
+<span className="flex items-center gap-1"><Icons.Clock w="4" h="4"/> {a.time}</span>
+<span>{a.duration} min</span>
+<span className="font-semibold" style={{color:'#E8A7BB'}}>{a.total_price} €</span>
+</div>
+{a.notes&&<p className="text-xs text-secondary mt-2 italic">📝 {a.notes}</p>}
+{staff&&<p className="text-xs text-secondary mt-1">👤 {staff.name}</p>}
+</div>
+<div className="flex gap-2">
+<button onClick={()=>{setSelReq(a);setAction('accept');}} className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-green-400 to-green-500 text-white text-sm font-semibold shadow-sm active:scale-[0.98] transition-all">✓ Accetta</button>
+<button onClick={()=>{setSelReq(a);setAction('newtime');}} className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-purple-400 to-purple-500 text-white text-sm font-semibold shadow-sm active:scale-[0.98] transition-all">⏰ Altro orario</button>
+<button onClick={()=>{setSelReq(a);setAction('reject');}} className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-red-400 to-red-500 text-white text-sm font-semibold shadow-sm active:scale-[0.98] transition-all">✕ Rifiuta</button>
+</div>
+</div>})}
+
+{newTimeAppts.length>0&&<div className="mt-4">
+<h3 className="font-semibold text-sm mb-3">Nuovi orari proposti</h3>
+{newTimeAppts.map(a=>{const cust=data.customers.find(c=>c.id===a.customer_id);
+return <div key={a.id} className="card p-4 bg-gradient-to-r from-purple-50 to-violet-50 border-purple-200/50">
+<div className="flex items-center justify-between">
+<div>
+<div className="text-sm font-semibold">{cust?.name}</div>
+<div className="text-[11px] text-secondary">Richiesto: {a.date} {a.time}</div>
+</div>
+<span className="status-badge badge-new-time">In attesa risposta</span>
+</div>
+</div>})}
+</div>}
+
+{action&&selReq&&<div className="fixed inset-0 bg-black/30 z-50 flex items-end" onClick={()=>{setAction(null);setSelReq(null);}}>
+<div className="bg-white w-full rounded-t-3xl p-6 animate-slide" onClick={e=>e.stopPropagation()}>
+<div className="flex items-center justify-between mb-4">
+<h3 className="font-semibold text-lg">{action==='accept'?'Accetta richiesta':action==='reject'?'Rifiuta richiesta':'Proponi nuovo orario'}</h3>
+<button onClick={()=>{setAction(null);setSelReq(null);}} className="p-1 rounded-lg hover:bg-gray-100"><Icons.X/></button>
+</div>
+{action==='accept'&&<div>
+<p className="text-sm text-secondary mb-4">Confermerai la prenotazione di <b>{data.customers.find(c=>c.id===selReq.customer_id)?.name}</b> per il {selReq.date} alle {selReq.time}.</p>
+<div className="bg-green-50 rounded-xl p-3 mb-4">
+<p className="text-xs text-green-700">📱 Verrà inviato un messaggio WhatsApp di conferma</p>
+<p className="text-xs text-green-700 mt-1">📧 Verrà inviata un'email di conferma</p>
+</div>
+<div className="flex gap-3">
+<button onClick={()=>doAction(selReq.id,'accept')} className="btn-primary flex-1">Conferma e notifica</button>
+<button onClick={()=>{setAction(null);setSelReq(null);}} className="btn-ghost flex-1">Annulla</button>
+</div>
+</div>}
+{action==='reject'&&<div>
+<label className="text-xs text-secondary font-semibold mb-1 block">Motivo (opzionale)</label>
+<textarea value={rejectReason} onChange={e=>setRejectReason(e.target.value)} placeholder="Es. Slot già occupato..." className="w-full input-field mb-4" rows={3}/>
+<div className="flex gap-3">
+<button onClick={()=>doAction(selReq.id,'reject')} className="flex-1 py-3 rounded-xl bg-gradient-to-r from-red-400 to-red-500 text-white text-sm font-semibold shadow-sm">Rifiuta</button>
+<button onClick={()=>{setAction(null);setSelReq(null);}} className="btn-ghost flex-1">Annulla</button>
+</div>
+</div>}
+{action==='newtime'&&<div>
+<label className="text-xs text-secondary font-semibold mb-1 block">Data</label>
+<input type="date" defaultValue={selReq.date} className="w-full input-field mb-3"/>
+<label className="text-xs text-secondary font-semibold mb-1 block">Orario proposto</label>
+<select value={newTime} onChange={e=>setNewTime(e.target.value)} className="w-full input-field mb-4">
+{['09:00','09:30','10:00','10:30','11:00','11:30','14:00','14:30','15:00','15:30','16:00','16:30','17:00','17:30','18:00'].map(t=><option key={t}>{t}</option>)}
+</select>
+<div className="flex gap-3">
+<button onClick={()=>doAction(selReq.id,'newtime')} className="btn-primary flex-1">Invia proposta</button>
+<button onClick={()=>{setAction(null);setSelReq(null);}} className="btn-ghost flex-1">Annulla</button>
+</div>
+</div>}
+</div>
+</div>}
+</div>
+</div>;
+}
+
+// ======================== ADMIN CUSTOMERS ========================
+function AdminCustomers(){
+const{navigate,data,getCustomerTags}=useApp();
+const[selCust,setSelCust]=useState(null);
+const[search,setSearch]=useState('');
+const filtered=data.customers.filter(c=>c.name.toLowerCase().includes(search.toLowerCase())||c.email.toLowerCase().includes(search.toLowerCase()));
+
+if(selCust){
+const c=data.customers.find(x=>x.id===selCust);
+const appts=data.appointments.filter(a=>a.customer_id===selCust);
+const reviews=data.reviews.filter(r=>r.customer_id===selCust);
+const pkgs=data.package_purchases.filter(pp=>pp.customer_id===selCust);
+const tags=getCustomerTags(c);
+const daysSince=c.last_visit?Math.floor((new Date()-new Date(c.last_visit))/864e5):999;
+return <div className="animate-fade pb-24">
+<Header title="Scheda cliente" back={()=>setSelCust(null)} showBack/>
+<div className="px-5 py-5">
+<div className="flex flex-col items-center mb-6">
+<div className="w-16 h-16 rounded-full gradient-pink flex items-center justify-center text-2xl mb-2 shadow-sm">{c?.avatar}</div>
+<h2 className="font-display text-lg font-bold">{c?.name}</h2>
+<p className="text-xs text-secondary">{c?.email} • {c?.phone}</p>
+<div className="flex gap-1 mt-2 flex-wrap justify-center">
+{tags.map(t=><span key={t} className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${t==='VIP'?'bg-gradient-to-r from-yellow-400 to-yellow-500 text-white':t==='Inattivo'?'bg-gray-200 text-gray-600':'bg-pink-100 text-pink-600'}`}>{t}</span>)}
+</div>
+</div>
+
+<div className="grid grid-cols-3 gap-3 mb-6">
+<div className="card p-3 text-center"><div className="text-lg font-bold" style={{color:'#E8A7BB'}}>{c?.total_spent}€</div><div className="text-[10px] text-secondary">Valore</div></div>
+<div className="card p-3 text-center"><div className="text-lg font-bold">{c?.completed}</div><div className="text-[10px] text-secondary">Visite</div></div>
+<div className="card p-3 text-center"><div className="text-lg font-bold">{daysSince}g</div><div className="text-[10px] text-secondary">Ultima visita</div></div>
+</div>
+
+<h3 className="font-semibold text-sm mb-3">Storico appuntamenti</h3>
+<div className="space-y-2 mb-6">
+{appts.map(a=>{const svcs=a.services.map(sid=>data.services.find(s=>s.id===sid)?.name).join(', ');const labels={pending:'badge-pending',confirmed:'badge-confirmed',completed:'badge-completed',cancelled_customer:'badge-cancelled',new_time:'badge-new-time'};const statusLabels={pending:'In attesa',confirmed:'Confermata',completed:'Completata',cancelled_customer:'Annullata',new_time:'Nuovo orario'};
+return <div key={a.id} className="card p-3">
+<div className="flex justify-between text-xs mb-1">
+<span className="font-mono">{a.date} {a.time}</span>
+<span className={`status-badge ${labels[a.status]||''}`}>{statusLabels[a.status]||a.status}</span>
+</div>
+<div className="text-sm">{svcs}</div>
+<div className="text-xs text-secondary">{a.duration} min • {a.total_price} €</div>
+</div>})}
+</div>
+
+{pkgs.length>0&&<>
+<h3 className="font-semibold text-sm mb-3">Pacchetti attivi</h3>
+{pkgs.map(pp=>{const pkg=data.packages.find(p=>p.id===pp.package_id);
+return <div key={pp.id} className="card p-4 mb-2">
+<div className="flex items-center justify-between mb-2">
+<span className="text-sm font-semibold">{pkg?.name}</span>
+<span className="text-xs font-bold" style={{color:'#E8A7BB'}}>{pkg?.price}€</span>
+</div>
+<div className="flex items-center gap-2">
+<div className="flex-1 progress-bar"><div className="progress-fill" style={{width:`${(pp.used_sessions/pp.total_sessions)*100}%`}}/></div>
+<span className="text-xs font-semibold">{pp.used_sessions}/{pp.total_sessions}</span>
+</div>
+<div className="text-xs text-secondary mt-1">{pp.total_sessions-pp.used_sessions} sedute residue</div>
+</div>})}
+</>}
+
+<h3 className="font-semibold text-sm mb-3">Note interne</h3>
+<textarea className="w-full input-field mb-6" placeholder="Aggiungi note..." rows={3} defaultValue={c?.notes||''}/>
+
+{reviews.length>0&&<>
+<h3 className="font-semibold text-sm mb-3">Recensioni</h3>
+{reviews.map(r=><div key={r.id} className="card p-3 mb-2">
+<div className="flex gap-0.5 mb-1">{[1,2,3,4,5].map(i=><span key={i} className={i<=r.rating?'text-yellow-400 text-xs':'text-gray-200 text-xs'}>★</span>)}</div>
+<p className="text-xs text-secondary">"{r.comment}"</p>
+</div>)}
+</>}
+
+<div className="flex gap-3 mt-4">
+<button onClick={()=>addToast(`WhatsApp inviato a ${c?.name}`)} className="flex-1 py-3 rounded-xl bg-green-500 text-white text-sm font-semibold flex items-center justify-center gap-2"><Icons.MessageCircle w="4" h="4"/>WhatsApp</button>
+<button onClick={()=>addToast(`Email inviata a ${c?.name}`)} className="flex-1 py-3 rounded-xl bg-blue-500 text-white text-sm font-semibold flex items-center justify-center gap-2"><Icons.Mail w="4" h="4"/>Email</button>
+</div>
+</div>
+</div>;
+}
+
+return <div className="animate-fade pb-24">
+<Header title="Clienti" subtitle={`${data.customers.length} clienti`} back={()=>navigate('admin-dashboard')} showBack/>
+<div className="px-5 py-4">
+<input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Cerca cliente per nome o email..." className="w-full input-field mb-4"/>
+<div className="space-y-2">
+{filtered.map(c=>{const tags=getCustomerTags(c);
+return <button key={c.id} onClick={()=>setSelCust(c.id)} className="w-full card p-4 flex items-center gap-3 text-left active:scale-[0.99] transition-all">
+<span className="text-2xl">{c.avatar}</span>
+<div className="flex-1 min-w-0">
+<div className="text-sm font-semibold">{c.name}</div>
+<div className="text-[11px] text-secondary truncate">{c.email}</div>
+<div className="flex gap-1 mt-1">
+{tags.slice(0,2).map(t=><span key={t} className="text-[9px] px-1.5 py-0.5 rounded bg-gray-100 text-secondary font-medium">{t}</span>)}
+</div>
+</div>
+<div className="text-right">
+<div className="text-sm font-bold">{c.total_spent} €</div>
+<div className="text-[10px] text-secondary">{c.completed} visite</div>
+</div>
+</button>})}
+</div>
+</div>
+</div>;
+}
+
+// ======================== ADMIN SERVICES ========================
+function AdminServices(){
+const{navigate,data,updateData,addData,addToast}=useApp();
+const[showAdd,setShowAdd]=useState(false);
+const[newSvc,setNewSvc]=useState({name:'',cat:'Mani',desc:'',duration:30,price:20,buffer:10,icon:'✨'});
+
+const handleAdd=()=>{
+if(!newSvc.name)return;
+addData('services',{id:'s'+Date.now(),...newSvc,staff:['st1'],active:true,popular:false});
+addToast('Servizio aggiunto ✓');
+setShowAdd(false);
+setNewSvc({name:'',cat:'Mani',desc:'',duration:30,price:20,buffer:10,icon:'✨'});
+};
+
+return <div className="animate-fade pb-24">
+<Header title="Servizi" subtitle={`${data.services.length} servizi`} back={()=>navigate('admin-dashboard')} showBack/>
+<div className="px-5 py-4">
+<button onClick={()=>setShowAdd(true)} className="btn-primary w-full mb-4 flex items-center justify-center gap-2"><Icons.Plus w="4" h="4"/>Aggiungi servizio</button>
+<div className="space-y-3">
+{data.services.map(s=><div key={s.id} className={`card p-4 ${s.active?'':'opacity-50'}`}>
+<div className="flex items-center justify-between mb-1">
+<div className="flex items-center gap-3">
+<div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-lg">{s.icon}</div>
+<div>
+<span className="text-[10px] font-bold uppercase tracking-wider" style={{color:'#E8A7BB'}}>{s.cat}</span>
+<h4 className="font-semibold text-sm">{s.name}</h4>
+</div>
+</div>
+<button onClick={()=>{updateData('services',s.id,{active:!s.active});addToast(s.active?'Servizio disattivato':'Servizio attivato');}} className={`text-[10px] font-bold px-2.5 py-1 rounded-lg ${s.active?'bg-green-100 text-green-700':'bg-gray-100 text-gray-500'}`}>{s.active?'Attivo':'Off'}</button>
+</div>
+<p className="text-xs text-secondary mb-2 leading-relaxed">{s.desc}</p>
+<div className="flex items-center gap-4 text-xs text-secondary">
+<span className="flex items-center gap-1"><Icons.Clock w="4" h="4"/> {s.duration} min</span>
+<span className="font-semibold">{s.price} €</span>
+<span>Buffer: {s.buffer} min</span>
+</div>
+<div className="flex gap-2 mt-3">
+<button onClick={()=>addToast('Modifica servizio (demo)')} className="flex-1 py-2 rounded-xl border border-[#EAEAEA] text-xs font-semibold flex items-center justify-center gap-1"><Icons.Edit w="3" h="3"/>Modifica</button>
+<button onClick={()=>{updateData('services',s.id,{active:false});addToast('Servizio eliminato','error');}} className="py-2 rounded-xl border border-red-200 text-xs text-red-500 font-semibold flex items-center justify-center gap-1"><Icons.Trash w="3" h="3"/></button>
+</div>
+</div>)}
+</div>
+</div>
+
+{showAdd&&<div className="fixed inset-0 bg-black/30 z-50 flex items-end" onClick={()=>setShowAdd(false)}>
+<div className="bg-white w-full rounded-t-3xl p-6 animate-slide" onClick={e=>e.stopPropagation()}>
+<h3 className="font-semibold text-lg mb-4">Nuovo servizio</h3>
+<div className="space-y-3">
+<input value={newSvc.name} onChange={e=>setNewSvc({...newSvc,name:e.target.value})} placeholder="Nome servizio" className="w-full input-field"/>
+<input value={newSvc.icon} onChange={e=>setNewSvc({...newSvc,icon:e.target.value})} placeholder="Icona (emoji)" className="w-full input-field"/>
+<select value={newSvc.cat} onChange={e=>setNewSvc({...newSvc,cat:e.target.value})} className="w-full input-field">
+{data.categories.filter(c=>c!=='Pacchetti').map(c=><option key={c}>{c}</option>)}
+</select>
+<textarea value={newSvc.desc} onChange={e=>setNewSvc({...newSvc,desc:e.target.value})} placeholder="Descrizione" className="w-full input-field" rows={2}/>
+<div className="grid grid-cols-3 gap-2">
+<input type="number" value={newSvc.duration} onChange={e=>setNewSvc({...newSvc,duration:+e.target.value})} placeholder="Durata (min)" className="input-field"/>
+<input type="number" value={newSvc.price} onChange={e=>setNewSvc({...newSvc,price:+e.target.value})} placeholder="Prezzo €" className="input-field"/>
+<input type="number" value={newSvc.buffer} onChange={e=>setNewSvc({...newSvc,buffer:+e.target.value})} placeholder="Buffer min" className="input-field"/>
+</div>
+<div className="flex gap-3">
+<button onClick={handleAdd} className="btn-primary flex-1">Salva</button>
+<button onClick={()=>setShowAdd(false)} className="btn-ghost flex-1">Annulla</button>
+</div>
+</div>
+</div>
+</div>}
+</div>;
+}
+
+// ======================== ADMIN PROMOTIONS ========================
+function AdminPromotions(){
+const{navigate,data,updateData,addToast}=useApp();
+return <div className="animate-fade pb-24">
+<Header title="Promozioni" back={()=>navigate('admin-dashboard')} showBack/>
+<div className="px-5 py-4 space-y-3">
+<button onClick={()=>addToast('Nuova promozione (demo)')} className="btn-primary w-full flex items-center justify-center gap-2"><Icons.Plus w="4" h="4"/>Nuova promozione</button>
+{data.promotions.map(p=>{const svc=p.service_id?data.services.find(s=>s.id===p.service_id):null;
+return <div key={p.id} className={`card p-5 ${p.active?'':'opacity-50'}`}>
+<div className="flex items-center justify-between mb-2">
+<span className={`px-2.5 py-1 rounded-lg text-xs font-bold ${p.active?'bg-green-100 text-green-700':'bg-gray-100 text-gray-500'}`}>{p.active?'Attiva':'Disattivata'}</span>
+<span className="text-[10px] text-secondary">Fino al {p.valid_until}</span>
+</div>
+<h4 className="font-semibold">{p.title}</h4>
+<p className="text-sm text-secondary mt-1">{p.desc}</p>
+{svc&&<p className="text-xs font-medium mt-2" style={{color:'#E8A7BB'}}>Servizio: {svc.name}</p>}
+{p.type==='package'&&<div className="mt-2 text-xs text-secondary">{p.sessions} sedute • Da <span className="line-through">{p.regular_price}€</span> a <span className="font-bold" style={{color:'#E8A7BB'}}>{p.package_price}€</span></div>}
+{p.code&&<div className="mt-2 flex items-center gap-2"><span className="text-[10px] text-secondary">Codice:</span><span className="text-xs font-bold font-mono bg-gray-100 px-2 py-0.5 rounded">{p.code}</span></div>}
+<div className="flex gap-2 mt-3">
+<button onClick={()=>{updateData('promotions',p.id,{active:!p.active});addToast(p.active?'Promozione disattivata':'Promozione attivata');}} className="flex-1 py-2 rounded-xl border border-[#EAEAEA] text-xs font-semibold">{p.active?'Disattiva':'Attiva'}</button>
+<button onClick={()=>addToast('Modifica promozione (demo)')} className="py-2 rounded-xl border border-[#EAEAEA] text-xs font-semibold"><Icons.Edit w="3" h="3"/></button>
+</div>
+</div>})}
+</div>
+</div>;
+}
+
+// ======================== ADMIN PACKAGES ========================
+function AdminPackages(){
+const{navigate,data,addData,addToast}=useApp();
+const[showAssign,setShowAssign]=useState(false);
+
+return <div className="animate-fade pb-24">
+<Header title="Pacchetti" back={()=>navigate('admin-dashboard')} showBack/>
+<div className="px-5 py-4">
+<button onClick={()=>setShowAssign(true)} className="btn-primary w-full mb-4 flex items-center justify-center gap-2"><Icons.Plus w="4" h="4"/>Assegna pacchetto</button>
+<div className="space-y-3">
+{data.packages.map(pkg=>{const svc=data.services.find(s=>s.id===pkg.service_id);const purchases=data.package_purchases.filter(pp=>pp.package_id===pkg.id);
+return <div key={pkg.id} className="card p-5">
+<div className="flex items-center gap-3 mb-3">
+<div className="w-10 h-10 rounded-xl gradient-pink flex items-center justify-center text-xl">{pkg.icon}</div>
+<div>
+<h4 className="font-semibold">{pkg.name}</h4>
+<p className="text-xs text-secondary">{pkg.desc}</p>
+</div>
+</div>
+<div className="flex items-center gap-2 text-sm mb-3">
+<span className="font-bold text-lg" style={{color:'#E8A7BB'}}>{pkg.price} €</span>
+<span className="text-secondary line-through text-sm">{pkg.sessions*svc?.price} €</span>
+<span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-lg font-bold">Risparmi {pkg.sessions*svc?.price-pkg.price} €</span>
+</div>
+{purchases.length>0&&<div className="space-y-2">
+<p className="text-xs text-secondary font-semibold">Acquisti: {purchases.length}</p>
+{purchases.map(pp=>{const cust=data.customers.find(c=>c.id===pp.customer_id);
+return <div key={pp.id} className="flex items-center justify-between py-2 border-t border-[#F0EEF0]">
+<div className="flex items-center gap-2">
+<span className="text-sm">{cust?.avatar}</span>
+<div>
+<span className="text-sm font-medium">{cust?.name}</span>
+<div className="text-[10px] text-secondary">{pp.total_sessions-pp.used_sessions} sedute residue</div>
+</div>
+</div>
+<div className="flex items-center gap-2">
+<div className="w-20 progress-bar"><div className="progress-fill" style={{width:`${(pp.used_sessions/pp.total_sessions)*100}%`}}/></div>
+<span className="text-xs font-semibold">{pp.used_sessions}/{pp.total_sessions}</span>
+</div>
+</div>})}
+</div>}
+</div>})}
+</div>
+</div>
+
+{showAssign&&<div className="fixed inset-0 bg-black/30 z-50 flex items-end" onClick={()=>setShowAssign(false)}>
+<div className="bg-white w-full rounded-t-3xl p-6 animate-slide" onClick={e=>e.stopPropagation()}>
+<h3 className="font-semibold text-lg mb-4">Assegna pacchetto</h3>
+<div className="space-y-3">
+<label className="text-xs text-secondary font-semibold">Pacchetto</label>
+<select className="w-full input-field">{data.packages.map(p=><option key={p.id}>{p.name}</option>)}</select>
+<label className="text-xs text-secondary font-semibold">Cliente</label>
+<select className="w-full input-field">{data.customers.map(c=><option key={c.id}>{c.name}</option>)}</select>
+<div className="flex gap-3">
+<button onClick={()=>{setShowAssign(false);addToast('Pacchetto assegnato ✓');}} className="btn-primary flex-1">Assegna</button>
+<button onClick={()=>setShowAssign(false)} className="btn-ghost flex-1">Annulla</button>
+</div>
+</div>
+</div>
+</div>}
+</div>;
+}
+
+// ======================== ADMIN REVIEWS ========================
+function AdminReviews(){
+const{navigate,data,updateData,addToast}=useApp();
+const pending=data.reviews.filter(r=>!r.approved);
+const approved=data.reviews.filter(r=>r.approved);
+const avgRating=approved.reduce((a,r)=>a+r.rating,0)/(approved.length||1);
+
+return <div className="animate-fade pb-24">
+<Header title="Recensioni" back={()=>navigate('admin-dashboard')} showBack/>
+<div className="px-5 py-4">
+<div className="card p-5 text-center mb-5 gradient-pink">
+<div className="text-3xl font-bold text-primary mb-1">★ {avgRating.toFixed(1)}</div>
+<div className="text-sm text-secondary">{approved.length} recensioni pubblicate</div>
+<div className="flex justify-center gap-0.5 mt-2">{[1,2,3,4,5].map(i=><span key={i} className={i<=Math.round(avgRating)?'text-yellow-400 text-lg':'text-gray-300 text-lg'}>★</span>)}</div>
+</div>
+
+{pending.length>0&&<div className="mb-6">
+<h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
+<span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"/>
+In attesa ({pending.length})
+</h3>
+{pending.map(r=>{const cust=data.customers.find(c=>c.id===r.customer_id);const svc=data.services.find(s=>s.id===r.service_id);
+return <div key={r.id} className="card p-4 mb-3 bg-gradient-to-r from-amber-50 to-orange-50/50 border-amber-200/50">
+<div className="flex items-center gap-3 mb-2">
+<span className="text-xl">{cust?.avatar}</span>
+<div>
+<div className="text-sm font-semibold">{cust?.name}</div>
+<div className="text-[11px] text-secondary">{svc?.name}</div>
+</div>
+</div>
+<div className="flex gap-0.5 mb-2">{[1,2,3,4,5].map(i=><span key={i} className={i<=r.rating?'text-yellow-400':'text-gray-200'}>★</span>)}</div>
+<p className="text-sm text-secondary leading-relaxed">"{r.comment}"</p>
+<div className="flex gap-2 mt-3">
+<button onClick={()=>{updateData('reviews',r.id,{approved:true});addToast('Recensione approvata ✓');}} className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-green-400 to-green-500 text-white text-sm font-semibold shadow-sm">✓ Approva</button>
+<button onClick={()=>{updateData('reviews',r.id,{approved:'hidden'});addToast('Recensione nascosta','error');}} className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-red-400 to-red-500 text-white text-sm font-semibold shadow-sm">✕ Nascondi</button>
+</div>
+</div>})}
+</div>}
+
+<h3 className="font-semibold text-sm mb-3">Pubblicate</h3>
+{approved.map(r=>{const cust=data.customers.find(c=>c.id===r.customer_id);
+return <div key={r.id} className="card p-4 mb-2">
+<div className="flex items-center gap-3 mb-2">
+<span className="text-xl">{cust?.avatar}</span>
+<div>
+<div className="text-sm font-semibold">{cust?.name}</div>
+<div className="flex gap-0.5">{[1,2,3,4,5].map(i=><span key={i} className={i<=r.rating?'text-yellow-400 text-xs':'text-gray-200 text-xs'}>★</span>)}</div>
+</div>
+</div>
+<p className="text-sm text-secondary leading-relaxed">"{r.comment}"</p>
+</div>})}
+</div>
+</div>;
+}
+
+// ======================== ADMIN WHATSAPP ========================
+function AdminWhatsApp(){
+const{navigate,data,addData,addToast}=useApp();
+const[input,setInput]=useState('');
+const[typing,setTyping]=useState(false);
+const chatRef=useRef(null);
+
+const logs=data.whatsapp_logs.slice(-30);
+
+useEffect(()=>{if(chatRef.current)chatRef.current.scrollTop=chatRef.current.scrollHeight;},[logs]);
+
+const botResponses={
+'manicure':{text:'Ciao! 🌸 Per la manicure semipermanente abbiamo questi slot disponibili questa settimana:\n\n🕐 Lunedì 14:00\n🕐 Martedì 10:30\n🕐 Giovedì 16:00\n🕐 Venerdì 11:00\n\nLa manicure dura 45 min e costa 25€. Quale preferisci?',intent:'booking_options'},
+'prezzo':{text:'I nostri prezzi 🌸:\n\n💅 Manicure semipermanente: 25€\n🦶 Pedicure estetico: 30€\n✨ Ceretta gambe: 28€\n👁️ Sopracciglia: 10€\n👀 Laminazione ciglia: 45€\n💆‍♀️ Trattamento viso: 55€\n💆 Massaggio relax: 50€\n💄 Make-up evento: 60€',intent:'faq_answer'},
+'orario':{text:'Glow Beauty Studio è aperto 🌸:\n\n📅 Lun-Ven: 09:00-19:00\n📅 Sabato: 09:00-18:00\n📅 Domenica: chiuso\n\nPausa pranzo: 13:00-14:00',intent:'faq_answer'},
+'indirizzo':{text:'Ci trovi in Via Roma 42, Milano 📍\n\nA 2 minuti dalla fermata M1 San Babila!\nC\'è un parcheggio nelle vicinanze 🚗',intent:'faq_answer'},
+'promo':{text:'Promozioni attive 🌸:\n\n✨ Trattamento viso: -20% fino al 30/06 (codice: GLOWFACE20)\n💅 Pacchetto manicure: 5 sedute a 110€ (codice: MANI5)\n💆 Pacchetto relax: 3 massaggi a 130€ (codice: RELAX3)\n🎉 Benvenuta: -15% primo trattamento (codice: WELCOME15)',intent:'faq_answer'},
+'conferm':{text:'Perfetto! ✅ Confermo la tua risposta.\n\nTi aspettiamo da Glow Beauty Studio! 🌸\n\nRiceverai un promemoria 24h prima dell\'appuntamento.',intent:'confirmation'},
+'default':{text:'Grazie per il tuo messaggio 🌸\n\nPosso aiutarti con:\n• Prenotare un appuntamento\n• Informazioni su prezzi e servizi\n• Orari e indirizzo\n• Promozioni attive\n\nCosa posso fare per te? 💕',intent:'general'}
+};
+
+const detectIntent=msg=>{
+const l=msg.toLowerCase();
+if(l.includes('manicure')||l.includes('prenotare')||l.includes('prenota'))return'booking_request';
+if(l.includes('costa')||l.includes('prezzo')||l.includes('quanto')||l.includes('tariffe'))return'faq_price';
+if(l.includes('orario')||l.includes('aperto')||l.includes('chiuso')||l.includes('ora'))return'faq_hours';
+if(l.includes('indirizzo')||l.includes('dove')||l.includes('via')||l.includes('trov'))return'faq_address';
+if(l.includes('promo')||l.includes('sconto')||l.includes('offerta'))return'faq_promo';
+if(l.includes('conferm')||l.includes('sì')||l.includes('si ')||l.includes('ok'))return'confirmation';
+return'general';
+};
+
+const sendMsg=()=>{
+if(!input.trim())return;
+const cust=data.customers[0];
+addData('whatsapp_logs',{id:'wl'+Date.now(),customer_id:cust.id,direction:'inbound',text:input,intent:detectIntent(input),confidence:0.85+Math.random()*0.1,status:'read',date:todayStr,appointment_id:null});
+const intent=detectIntent(input);
+setTyping(true);
+setTimeout(()=>{
+const resp=botResponses[intent]||botResponses['default'];
+addData('whatsapp_logs',{id:'wl'+(Date.now()+1),customer_id:cust.id,direction:'outbound',text:resp.text,intent:resp.intent,confidence:0.9+Math.random()*0.08,status:'delivered',date:todayStr,appointment_id:null});
+setTyping(false);
+addToast('Risposta WhatsApp simulata inviata ✓');
+},1200+Math.random()*800);
+setInput('');
+};
+
+const quickActions=['Manicure','Prezzi','Orari','Indirizzo','Promo','Confermo'];
+
+return <div className="animate-fade pb-24">
+<Header title="WhatsApp Bot" back={()=>navigate('admin-dashboard')} showBack/>
+<div className="px-5 py-4">
+<div className="card p-4 mb-4 bg-gradient-to-r from-green-50 to-green-100/50 border-green-200/50">
+<div className="flex items-center gap-2 mb-2">
+<Icons.WhatsApp/><span className="text-sm font-semibold text-green-800">Glow Beauty Studio Bot</span>
+</div>
+<p className="text-xs text-green-700 leading-relaxed">Bot intelligente che risponde come Glow Beauty Studio. Struttura pronta per WhatsApp Business Cloud API con webhook e template.</p>
+<div className="flex gap-1.5 mt-3 flex-wrap">
+{quickActions.map(q=><button key={q} onClick={()=>setInput(q)} className="text-[10px] px-2.5 py-1 bg-white rounded-full text-green-700 border border-green-200 font-medium hover:bg-green-50 transition-all">{q}</button>)}
+</div>
+</div>
+
+<div ref={chatRef} className="rounded-2xl overflow-hidden mb-4" style={{background:'#E5DDD5',backgroundImage:'url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoMCwwLDAsMC4wNSkiLz48L3N2Zz4=)',height:'380px',overflowY:'auto',padding:'12px'}}>
+{logs.map((log,i)=>{const isIn=log.direction==='inbound';
+return <div key={log.id} className={`mb-2 flex ${isIn?'justify-end':'justify-start'} animate-fade`}>
+<div className={`max-w-[82%] rounded-2xl px-3.5 py-2.5 shadow-sm ${isIn?'bg-[#D9FDD3] rounded-tr-md':'bg-white rounded-tl-md'}`}>
+<p className="text-[13px] whitespace-pre-line leading-relaxed" style={{color:isIn?'#111':'#333'}}>{log.text}</p>
+<div className="flex items-center justify-end gap-1.5 mt-1">
+<span className="text-[9px] text-gray-400">{log.intent}</span>
+<span className="text-[9px] text-gray-400">✓✓</span>
+</div>
+</div>
+</div>})}
+{typing&&<div className="flex justify-start animate-fade">
+<div className="bg-white rounded-2xl rounded-tl-md px-4 py-3 shadow-sm">
+<div className="flex gap-1.5">
+<div className="typing-dot w-2 h-2 rounded-full bg-gray-400"/><div className="typing-dot w-2 h-2 rounded-full bg-gray-400"/><div className="typing-dot w-2 h-2 rounded-full bg-gray-400"/>
+</div>
+</div>
+</div>}
+</div>
+
+<div className="flex gap-2">
+<input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==='Enter'&&sendMsg()} placeholder="Simula messaggio cliente..." className="flex-1 input-field"/>
+<button onClick={sendMsg} className="btn-primary px-4 flex items-center justify-center"><Icons.Send/></button>
+</div>
+
+<div className="mt-5">
+<h3 className="font-semibold text-sm mb-3">Log messaggi</h3>
+<div className="card overflow-hidden">
+<div className="overflow-x-auto">
+<table className="w-full text-xs min-w-[400px]">
+<thead className="bg-gray-50"><tr>
+<th className="p-3 text-left font-semibold text-secondary">Dir.</th>
+<th className="p-3 text-left font-semibold text-secondary">Intent</th>
+<th className="p-3 text-left font-semibold text-secondary">Conf.</th>
+<th className="p-3 text-left font-semibold text-secondary">Stato</th>
+<th className="p-3 text-left font-semibold text-secondary">Data</th>
+</tr></thead>
+<tbody>
+{logs.slice().reverse().slice(0,10).map(log=>(
+<tr key={log.id} className="border-t border-[#F0EEF0] hover:bg-gray-50">
+<td className="p-3"><span className={`font-semibold ${log.direction==='inbound'?'text-blue-600':'text-green-600'}`}>{log.direction==='inbound'?'← In':'→ Out'}</span></td>
+<td className="p-3 font-medium">{log.intent}</td>
+<td className="p-3">{Math.round(log.confidence*100)}%</td>
+<td className="p-3">{log.status}</td>
+<td className="p-3 text-secondary">{log.date}</td>
+</tr>
+))}
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+<div className="mt-5 card p-4 bg-blue-50 border-blue-200/50">
+<h4 className="text-sm font-semibold text-blue-800 mb-2">🔌 Integrazione WhatsApp Business API</h4>
+<ul className="text-xs text-blue-700 space-y-1.5">
+<li>• Webhook per messaggi in ingresso</li>
+<li>• Template messages per conferme</li>
+<li>• Interactive buttons per scelte rapide</li>
+<li>• Media messages per invio foto servizi</li>
+<li>• Catalog integration per listino prezzi</li>
+</ul>
+</div>
+</div>
+</div>;
+}
+
+// ======================== ADMIN STATS ========================
+function AdminStats(){
+const{navigate,data}=useApp();
+const completed=data.appointments.filter(a=>a.status==='completed');
+const revenue=completed.reduce((a,x)=>a+x.total_price,0);
+const avgR=data.reviews.filter(r=>r.approved).reduce((a,r)=>a+r.rating,0)/(data.reviews.filter(r=>r.approved).length||1);
+const retention=(data.customers.filter(c=>c.completed>=3).length/data.customers.length*100).toFixed(0);
+
+const svcCount={};
+data.appointments.forEach(a=>a.services.forEach(sid=>{svcCount[sid]=(svcCount[sid]||0)+1}));
+const topSvc=Object.entries(svcCount).sort((a,b)=>b[1]-a[1]);
+
+const monthlyData=[15,22,18,25,30,28,35];
+
+return <div className="animate-fade pb-24">
+<Header title="Statistiche" back={()=>navigate('admin-dashboard')} showBack/>
+<div className="px-5 py-4">
+<div className="grid grid-cols-2 gap-3 mb-6">
+{[
+{label:'Fatturato',value:`${revenue}€`,sub:'stimato totale',icon:'💰',color:'text-green-600'},
+{label:'Recensioni',value:`★ ${avgR.toFixed(1)}`,sub:`${data.reviews.filter(r=>r.approved).length} recensioni`,icon:'⭐',color:'text-yellow-500'},
+{label:'Ricorrenti',value:`${retention}%`,sub:'clienti fidelizzati',icon:'🔄',color:'text-blue-600'},
+{label:'No-show',value:`${(data.appointments.filter(a=>a.status==='no_show').length/data.appointments.length*100).toFixed(0)}%`,sub:'tasso assenze',icon:'❌',color:'text-red-500'},
+].map(s=><div key={s.label} className="card p-4">
+<div className="text-2xl mb-1">{s.icon}</div>
+<div className={`text-xl font-bold ${s.color}`}>{s.value}</div>
+<div className="text-[11px] text-secondary">{s.label} • {s.sub}</div>
+</div>)}
+</div>
+
+<div className="card p-5 mb-5">
+<h3 className="font-semibold text-sm mb-4">Andamento mensile</h3>
+<div className="flex items-end gap-4 h-32">
+{monthlyData.map((v,i)=>{const max=Math.max(...monthlyData);
+return <div key={i} className="flex-1 flex flex-col items-center gap-1">
+<div className="w-full rounded-t-xl bg-gradient-to-t from-pink-400 to-pink-300 transition-all duration-500" style={{height:`${(v/max)*100}%`,minHeight:'12px'}}/>
+<span className="text-[10px] text-secondary">{monthShort[(today.getMonth()-6+i+12)%12]}</span>
+</div>})}
+</div>
+</div>
+
+<h3 className="font-semibold text-sm mb-3">Classifica servizi</h3>
+{topSvc.map(([sid,count],i)=>{const svc=data.services.find(s=>s.id===sid);const max=topSvc[0][1];
+return <div key={sid} className="flex items-center gap-3 mb-3">
+<span className="text-sm text-secondary w-6 font-mono font-bold">#{i+1}</span>
+<div className="flex-1">
+<div className="flex justify-between text-sm mb-1">
+<span className="font-medium">{svc?.name}</span>
+<span className="text-xs text-secondary font-semibold">{count}</span>
+</div>
+<div className="progress-bar"><div className="progress-fill" style={{width:`${(count/max)*100}%`}}/></div>
+</div>
+</div>})}
+
+<h3 className="font-semibold text-sm mb-3 mt-6">Segmenti clienti</h3>
+<div className="space-y-3">
+{[
+{label:'VIP',count:data.customers.filter(c=>c.completed>=6).length,color:'bg-yellow-400',pct:Math.round(data.customers.filter(c=>c.completed>=6).length/data.customers.length*100)},
+{label:'Ricorrenti',count:data.customers.filter(c=>c.completed>=3&&c.completed<6).length,color:'bg-green-400',pct:Math.round(data.customers.filter(c=>c.completed>=3&&c.completed<6).length/data.customers.length*100)},
+{label:'Nuovi',count:data.customers.filter(c=>c.completed>=1&&c.completed<3).length,color:'bg-blue-400',pct:Math.round(data.customers.filter(c=>c.completed>=1&&c.completed<3).length/data.customers.length*100)},
+{label:'Inattivi',count:data.customers.filter(c=>{const d=c.last_visit?Math.floor((new Date()-new Date(c.last_visit))/864e5):999;return d>90}).length,color:'bg-gray-400',pct:Math.round(data.customers.filter(c=>{const d=c.last_visit?Math.floor((new Date()-new Date(c.last_visit))/864e5):999;return d>90}).length/data.customers.length*100)},
+].map(seg=><div key={seg.label} className="flex items-center gap-3">
+<div className={`w-3 h-3 rounded-full ${seg.color}`}/>
+<span className="text-sm flex-1 font-medium">{seg.label}</span>
+<span className="text-sm font-bold w-8 text-right">{seg.count}</span>
+<span className="text-xs text-secondary w-10">{seg.pct}%</span>
+</div>)}
+</div>
+</div>
+</div>;
+}
+
+// ======================== ADMIN SETTINGS ========================
+function AdminSettings(){
+const{navigate,data,updateData,logout}=useApp();
+const center=data.beauty_centers[0];
+const settings=data.settings;
+return <div className="animate-fade pb-24">
+<Header title="Impostazioni" back={()=>navigate('admin-dashboard')} showBack/>
+<div className="px-5 py-4 space-y-6">
+<div>
+<h3 className="font-semibold text-sm mb-3">Profilo centro</h3>
+<div className="card p-5 space-y-3">
+{[{label:'Nome centro',key:'name',val:center.name},{label:'Indirizzo',key:'address',val:center.address},{label:'Telefono',key:'phone',val:center.phone},{label:'WhatsApp',key:'whatsapp',val:center.whatsapp},{label:'Email',key:'email',val:center.email}].map(it=>
+<div key={it.key}>
+<label className="text-[11px] text-secondary font-semibold uppercase tracking-wider">{it.label}</label>
+<input defaultValue={it.val} className="w-full input-field mt-1"/>
+</div>)}
+</div>
+</div>
+
+<div>
+<h3 className="font-semibold text-sm mb-3">Regole prenotazione</h3>
+<div className="card p-5 space-y-3">
+<div className="grid grid-cols-2 gap-3">
+<div><label className="text-[11px] text-secondary font-semibold uppercase tracking-wider">Min (ore)</label><input type="number" defaultValue={settings.booking_min_hours} className="w-full input-field mt-1"/></div>
+<div><label className="text-[11px] text-secondary font-semibold uppercase tracking-wider">Max (giorni)</label><input type="number" defaultValue={settings.booking_max_days} className="w-full input-field mt-1"/></div>
+</div>
+<div className="grid grid-cols-2 gap-3">
+<div><label className="text-[11px] text-secondary font-semibold uppercase tracking-wider">Slot (min)</label><input type="number" defaultValue={settings.slot_interval} className="w-full input-field mt-1"/></div>
+<div><label className="text-[11px] text-secondary font-semibold uppercase tracking-wider">Buffer (min)</label><input type="number" defaultValue={settings.buffer_between} className="w-full input-field mt-1"/></div>
+</div>
+<div><label className="text-[11px] text-secondary font-semibold uppercase tracking-wider">Cancellazione (ore prima)</label><input type="number" defaultValue={settings.cancellation_hours} className="w-full input-field mt-1"/></div>
+</div>
+</div>
+
+<div>
+<h3 className="font-semibold text-sm mb-3">Notifiche</h3>
+<div className="card p-5 space-y-4">
+{[{label:'WhatsApp Business',on:settings.whatsapp_enabled},{label:'Email',on:settings.email_enabled},{label:'Promemoria 24h',on:settings.reminder_24h},{label:'Multi-centro',on:settings.multi_center}].map(it=>
+<div key={it.label} className="flex items-center justify-between">
+<span className="text-sm font-medium">{it.label}</span>
+<button onClick={()=>{updateData('settings',settings.center_id,{[it.label.includes('WhatsApp')?'whatsapp_enabled':it.label.includes('Email')?'email_enabled':it.label.includes('Multi')?'multi_center':'reminder_24h']:!it.on})}} className={`w-12 h-7 rounded-full transition-all ${it.on?'bg-gradient-to-r from-pink-400 to-pink-500':'bg-gray-200'}`}>
+<div className={`w-5 h-5 bg-white rounded-full shadow-sm transition-all transform ${it.on?'translate-x-6':'translate-x-1'}`}/>
+</button>
+</div>)}
+</div>
+</div>
+
+<div>
+<h3 className="font-semibold text-sm mb-3">Orari apertura</h3>
+<div className="card p-5 space-y-2">
+{[['Lun','mon'],['Mar','tue'],['Mer','wed'],['Gio','thu'],['Ven','fri'],['Sab','sat'],['Dom','sun']].map(([label,key])=>{
+const hrs=data.working_hours[key]||[];
+const isOpen=hrs.length>0;
+return <div key={key} className="flex items-center justify-between py-2 border-b border-[#F0EEF0] last:border-0">
+<span className="text-sm font-medium">{label}</span>
+<span className="text-sm text-secondary">{isOpen?`${hrs[0][0]}-${hrs[hrs.length-1][1]}`:'Chiuso'}</span>
+</div>})}
+</div>
+</div>
+
+<div>
+<h3 className="font-semibold text-sm mb-3">Staff</h3>
+<div className="space-y-2">
+{data.staff.map(s=><div key={s.id} className="card p-4 flex items-center gap-3">
+<span className="text-xl">{s.avatar}</span>
+<div className="flex-1">
+<div className="text-sm font-semibold">{s.name}</div>
+<div className="text-xs text-secondary">{s.role}</div>
+</div>
+<div className="text-right">
+<div className="text-sm font-bold">★ {s.rating}</div>
+<div className="text-[10px] text-secondary">{s.clients} clienti</div>
+</div>
+</div>)}
+</div>
+</div>
+
+<div className="card p-5 bg-gradient-to-r from-red-50 to-orange-50 border-red-200/50">
+<h3 className="font-semibold text-sm text-red-700 mb-3 flex items-center gap-2"><Icons.Shield w="4" h="4"/>Zona pericolosa</h3>
+<button onClick={logout} className="w-full py-3 rounded-xl bg-gradient-to-r from-red-400 to-red-500 text-white text-sm font-semibold flex items-center justify-center gap-2 shadow-sm"><Icons.LogOut w="4" h="4"/>Esci dall'account</button>
+</div>
+
+<div className="text-center text-xs text-secondary py-4">
+GlowBook v1.0.0<br/>© 2025 GlowBook — SaaS per centri estetici
+</div>
+</div>
+</div>;
+}
+
+// ======================== MAIN APP ========================
+function App(){
+const{page,user}=useApp();
+
+if(!user)return <Login/>;
+
+if(user.role==='cliente')return <>
+<Toasts/>
+{page==='home'&&<CustHome/>}
+{page==='book'&&<BookingFlow/>}
+{page==='services'&&<CustServices/>}
+{page==='my-bookings'&&<MyBookings/>}
+{page==='promotions'&&<Promotions/>}
+{page==='profile'&&<CustProfile/>}
+{page==='packages'&&<Promotions/>}
+{page==='reviews'&&<Promotions/>}
+<CustNav/>
+</>;
+
+return <>
+<Toasts/>
+{page==='admin-dashboard'&&<AdminDash/>}
+{page==='admin-calendar'&&<AdminCalendar/>}
+{page==='admin-requests'&&<AdminRequests/>}
+{page==='admin-customers'&&<AdminCustomers/>}
+{page==='admin-services'&&<AdminServices/>}
+{page==='admin-promotions'&&<AdminPromotions/>}
+{page==='admin-packages'&&<AdminPackages/>}
+{page==='admin-reviews'&&<AdminReviews/>}
+{page==='admin-whatsapp'&&<AdminWhatsApp/>}
+{page==='admin-stats'&&<AdminStats/>}
+{page==='admin-settings'&&<AdminSettings/>}
+<AdminNav/>
+</>;
+}
+
+function Root(){return <Provider><div className="max-w-lg mx-auto bg-white min-h-screen shadow-2xl relative"><App/></div></Provider>}
+ReactDOM.createRoot(document.getElementById('root')).render(<Root/>);
+</script>
+</body>
+</html>
+
